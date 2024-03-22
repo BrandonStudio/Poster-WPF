@@ -1,4 +1,4 @@
-﻿<Window x:Class="Poster.MainWindow"
+<Window x:Class="Poster.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -9,13 +9,22 @@
         Title="MainWindow" MinHeight="400" MinWidth="600" Padding="5">
   <Window.Resources>
     <CollectionViewSource Source="{Binding RequestHeaders}" x:Key="headers" />
+    <local:HttpContentTypeConverter x:Key="contentTypeConverter" />
   </Window.Resources>
   <DockPanel>
     <DockPanel DockPanel.Dock="Top" Margin="2">
       <Label DockPanel.Dock="Left" Margin="2" VerticalContentAlignment="Center">URL:</Label>
-      <Button DockPanel.Dock="Right" Margin="5" Padding="5" VerticalAlignment="Center">Send</Button>
-      <TextBlock x:Name="urlText" DockPanel.Dock="Bottom" VerticalAlignment="Center" Margin="10,0" Text="URL" />
-      <TextBox x:Name="urlInput" Margin="5" Padding="5" VerticalContentAlignment="Center"></TextBox>
+      <Button DockPanel.Dock="Right"
+        Margin="5" Padding="5" VerticalAlignment="Center"
+        Click="StartSend">
+        _Send
+      </Button>
+      <TextBlock x:Name="urlText"
+        DockPanel.Dock="Bottom"
+        VerticalAlignment="Center" Margin="10,0">
+        URL
+      </TextBlock>
+      <TextBox x:Name="urlInput" Margin="5" Padding="5" VerticalContentAlignment="Center" TextChanged="OnUrlChanged"></TextBox>
     </DockPanel>
     <StatusBar DockPanel.Dock="Bottom" Padding="2">
       <TextBlock x:Name="statusBar" Text="Ready" />
@@ -26,10 +35,11 @@
         <ColumnDefinition Width="40*" />
       </Grid.ColumnDefinitions>
       <GroupBox Header="Request" Grid.Column="0" Margin="2" Padding="2">
-        <DockPanel>
+        <DockPanel x:Name="requestPanel">
           <local:HintLine x:Name="methodLine" DockPanel.Dock="Top" Hint="Method: ">
             <ComboBox
               x:Uid="methodSelector"
+              IsEditable="True"
               VerticalContentAlignment="Center">
             </ComboBox>
           </local:HintLine>
@@ -38,7 +48,6 @@
               x:Uid="contentTypeSelector"
               VerticalAlignment="Center"
               IsEditable="True">
-
             </ComboBox>
           </local:HintLine>
           <Expander Name="headersExpander"
@@ -57,7 +66,7 @@
             </DataGrid>
           </Expander>
           <Separator DockPanel.Dock="Top" Width="1" />
-          <TabControl x:Name="tabControl">
+          <TabControl x:Name="requestTab" SelectedIndex="{Binding RequestType, Converter={StaticResource contentTypeConverter}}">
             <TabItem Header="Text">
               <TextBox x:Name="textInput"
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
@@ -66,27 +75,38 @@
 
               </TextBox>
             </TabItem>
+            <TabItem Header="Image">
+              <DockPanel x:Name="imageArea">
+                <Label DockPanel.Dock="Top">Drag image here (not file).</Label>
+                <Image x:Name="imageInput" />
+              </DockPanel>
+            </TabItem>
             <TabItem Header="File">
               <Grid x:Name="fileArea">
-                <Label Content="Drag file here to upload." />
+                <Label Content="Drag file here." />
                 <Button HorizontalAlignment="Center" VerticalAlignment="Center"
                   Padding="5">
-                  Upload
+                  Select File
                 </Button>
+                <TextBlock
+                  x:Name="inputFilePath"
+                  HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
+                  Margin="2" Padding="2" />
               </Grid>
             </TabItem>
           </TabControl>
         </DockPanel>
       </GroupBox>
       <GroupBox Header="Response" Grid.Column="1" Margin="2" Padding="2">
-        <DockPanel>
+        <DockPanel x:Name="responsePanel">
           <Expander DockPanel.Dock="Top" HorizontalContentAlignment="Stretch">
             <Expander.Header>
               <DockPanel HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
                 <Label>Status:</Label>
                 <TextBlock x:Name="statusText"
                   Margin="2" Padding="2"
-                  VerticalAlignment="Center" />
+                  VerticalAlignment="Center"
+                  ToolTip="{Binding Text, ElementName=statusText}"/>
               </DockPanel>
             </Expander.Header>
             <TextBox x:Name="responseInfo"
@@ -95,33 +115,33 @@
             </TextBox>
           </Expander>
           <Separator DockPanel.Dock="Top" Width="1" />
-          <TabControl>
-            <TabItem Header="Text">
+          <TabControl SelectedIndex="{Binding ResponseType, Converter={StaticResource contentTypeConverter}}">
+            <TabItem Header="_Text">
               <TextBox x:Name="textResponse"
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 Margin="5" Padding="5"
                 IsReadOnly="True" AcceptsReturn="True">
               </TextBox>
             </TabItem>
-            <TabItem Header="Image">
+            <TabItem Header="_Image">
               <Image x:Name="imageResponse"/>
             </TabItem>
-            <TabItem Header="File">
+            <TabItem Header="_File">
               <DockPanel>
-                <Grid DockPanel.Dock="Top">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="50*" />
-                    <ColumnDefinition Width="50*" />
-                  </Grid.ColumnDefinitions>
-                  <Button Grid.Column="0"
-                          Margin="5" Padding="5">
-                    Open
+                <StackPanel
+                  DockPanel.Dock="Top"
+                  Orientation="Horizontal"
+                  Margin="2">
+                  <Button Margin="2" Padding="2">
+                    _Open
                   </Button>
-                  <Button Grid.Column="1"
-                          Margin="5" Padding="5">
-                    Open in folder
+                  <Button Margin="2" Padding="2">
+                    Fol_der
                   </Button>
-                </Grid>
+                  <Button Margin="2" Padding="2">
+                    S_ave To
+                  </Button>
+                </StackPanel>
                 <TextBox x:Name="fileResponsePath"
                   Margin="5" Padding="5"
                   HorizontalAlignment="Stretch"
