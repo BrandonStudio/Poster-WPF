@@ -8,6 +8,7 @@ using System.Windows;
 using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
+using System.Diagnostics;
 
 namespace Poster;
 
@@ -70,9 +71,23 @@ public class HttpContentTypeConverter : IValueConverter
 {
 	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
 	{
-		if (value is HttpContentType ct)
-			return ct.ToString();
-		return HttpContentType.File.ToString();
+		if (targetType == typeof(string))
+		{
+			if (value is HttpContentType ct)
+				return ct.ToString();
+			return HttpContentType.File.ToString();
+		}
+		else if (targetType.IsValueType)
+		{
+			if (value is HttpContentType ct)
+				return (int)ct;
+			return (int)HttpContentType.File;
+		}
+		else
+		{
+			Debug.Assert(false);
+			throw new NotSupportedException();
+		}
 	}
 
 	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

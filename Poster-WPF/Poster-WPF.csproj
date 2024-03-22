@@ -88,6 +88,7 @@
     <Compile Include="HintLine.xaml.cs">
       <DependentUpon>HintLine.xaml</DependentUpon>
     </Compile>
+    <Compile Include="MainWindow.xaml.core.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>

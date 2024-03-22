@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -21,6 +22,17 @@ namespace Poster
 			"image/bmp",
 			"image/webp",
 			"application/octet-stream",
+		];
+
+		internal static readonly HttpMethod[] HttpMethods = [
+			HttpMethod.Get,
+			HttpMethod.Post,
+			HttpMethod.Put,
+			HttpMethod.Delete,
+			HttpMethod.Head,
+			HttpMethod.Options,
+			new("PATCH"),
+			HttpMethod.Trace
 		];
 	}
 }

@@ -5,10 +5,8 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Poster"
         mc:Ignorable="d"
-        DataContext="{RelativeSource Mode=Self}"
         Title="MainWindow" MinHeight="400" MinWidth="600" Padding="5">
   <Window.Resources>
-    <CollectionViewSource Source="{Binding RequestHeaders}" x:Key="headers" />
     <local:HttpContentTypeConverter x:Key="contentTypeConverter" />
   </Window.Resources>
   <DockPanel>
@@ -16,7 +14,7 @@
       <Label DockPanel.Dock="Left" Margin="2" VerticalContentAlignment="Center">URL:</Label>
       <Button DockPanel.Dock="Right"
         Margin="5" Padding="5" VerticalAlignment="Center"
-        Click="StartSend">
+        Click="OnSendClicked">
         _Send
       </Button>
       <TextBlock x:Name="urlText"
@@ -24,15 +22,21 @@
         VerticalAlignment="Center" Margin="10,0">
         URL
       </TextBlock>
-      <TextBox x:Name="urlInput" Margin="5" Padding="5" VerticalContentAlignment="Center" TextChanged="OnUrlChanged"></TextBox>
+      <TextBox x:Name="urlInput"
+        Margin="5" Padding="5"
+        VerticalContentAlignment="Center"
+        TextChanged="OnUrlChanged" KeyDown="OnUrlTextKeyPressed" />
     </DockPanel>
-    <StatusBar DockPanel.Dock="Bottom" Padding="2">
-      <TextBlock x:Name="statusBar" Text="Ready" />
+    <StatusBar DockPanel.Dock="Bottom" Padding="2" HorizontalContentAlignment="Stretch">
+      <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+        <TextBlock x:Name="statusBar" Text="Ready" />
+        <ProgressBar x:Name="progressBar" Width="80" Height="{Binding ActualHeight, ElementName=statusBar, Mode=OneWay}" HorizontalAlignment="Right" />
+      </Grid>
     </StatusBar>
     <Grid Margin="5">
       <Grid.ColumnDefinitions>
-        <ColumnDefinition Width="60*" />
-        <ColumnDefinition Width="40*" />
+        <ColumnDefinition Width="45*" />
+        <ColumnDefinition Width="55*" />
       </Grid.ColumnDefinitions>
       <GroupBox Header="Request" Grid.Column="0" Margin="2" Padding="2">
         <DockPanel x:Name="requestPanel">
@@ -53,17 +57,28 @@
           <Expander Name="headersExpander"
             DockPanel.Dock="Top"
             Header="Headers" ExpandDirection="Down" IsTabStop="True">
-            <DataGrid
-              ColumnWidth="*" Height="Auto"
-              Margin="2" Padding="2"
-              ItemsSource="{Binding Source={StaticResource headers}}"
-              AutoGenerateColumns="False"
-              CanUserSortColumns="False">
-              <DataGrid.Columns>
-                <DataGridTextColumn Width="40*" Header="Name" Binding="{Binding Name}" />
-                <DataGridTextColumn Width="60*" Header="Value" Binding="{Binding Value}" />
-              </DataGrid.Columns>
-            </DataGrid>
+            <TabControl>
+              <TabItem Header="Grid">
+                <DataGrid
+                  ColumnWidth="*"
+                  Margin="2" Padding="2"
+                  ItemsSource="{Binding RequestHeaders}"
+                  AutoGenerateColumns="False"
+                  CanUserSortColumns="False">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Width="40*" Header="Name" Binding="{Binding Name}" />
+                      <DataGridTextColumn Width="60*" Header="Value" Binding="{Binding Value}" />
+                    </DataGrid.Columns>
+                  </DataGrid>
+              </TabItem>
+              <TabItem Header="Text" IsEnabled="False">
+                <TextBox x:Name="headersInput"
+                  Padding="5"
+                  MinHeight="50"
+                  TextWrapping="Wrap"
+                  AcceptsReturn="True" />
+              </TabItem>
+            </TabControl>
           </Expander>
           <Separator DockPanel.Dock="Top" Width="1" />
           <TabControl x:Name="requestTab" SelectedIndex="{Binding RequestType, Converter={StaticResource contentTypeConverter}}">
@@ -71,28 +86,58 @@
               <TextBox x:Name="textInput"
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 Padding="5"
-                AcceptsReturn="True">
-
-              </TextBox>
+                TextWrapping="Wrap"
+                AcceptsReturn="True"
+                AllowDrop="True"/>
             </TabItem>
-            <TabItem Header="Image">
+            <TabItem Header="Image" IsEnabled="False">
               <DockPanel x:Name="imageArea">
                 <Label DockPanel.Dock="Top">Drag image here (not file).</Label>
                 <Image x:Name="imageInput" />
               </DockPanel>
             </TabItem>
             <TabItem Header="File">
-              <Grid x:Name="fileArea">
-                <Label Content="Drag file here." />
-                <Button HorizontalAlignment="Center" VerticalAlignment="Center"
-                  Padding="5">
+              <DockPanel>
+                <Button Name="filePickerButton"
+                  DockPanel.Dock="Top"
+                  Margin="2" Padding="2"
+                  Click="OnFilePickerClicked">
                   Select File
                 </Button>
-                <TextBlock
+                <TextBox
                   x:Name="inputFilePath"
-                  HorizontalAlignment="Stretch" VerticalAlignment="Bottom"
-                  Margin="2" Padding="2" />
-              </Grid>
+                  HorizontalAlignment="Stretch"
+                  TextWrapping="Wrap"
+                  Margin="2" Padding="2"
+                  AllowDrop="True"
+                  PreviewDragOver="OnFileDragOver" Drop="OnFileDrop">
+                  <TextBox.Style>
+                    <Style TargetType="TextBox" xmlns:sys="clr-namespace:System;assembly=mscorlib">
+                      <Style.Resources>
+                        <VisualBrush x:Key="CueBannerBrush" AlignmentX="Left" AlignmentY="Top" Stretch="None">
+                          <VisualBrush.Visual>
+                            <!-- It's totally OK even if label is too long. -->
+                            <Label Margin="5" Padding="5" Foreground="LightGray">
+                              Enter file path or click above button or drag file here.
+                            </Label>
+                          </VisualBrush.Visual>
+                        </VisualBrush>
+                      </Style.Resources>
+                      <Style.Triggers>
+                        <Trigger Property="Text" Value="{x:Static sys:String.Empty}">
+                          <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                        </Trigger>
+                        <Trigger Property="Text" Value="{x:Null}">
+                          <Setter Property="Background" Value="{StaticResource CueBannerBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                          <Setter Property="Background" Value="White" />
+                        </Trigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBox.Style>
+                </TextBox>
+              </DockPanel>
             </TabItem>
           </TabControl>
         </DockPanel>
@@ -120,7 +165,8 @@
               <TextBox x:Name="textResponse"
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 Margin="5" Padding="5"
-                IsReadOnly="True" AcceptsReturn="True">
+                IsReadOnly="True" AcceptsReturn="True"
+                TextWrapping="Wrap">
               </TextBox>
             </TabItem>
             <TabItem Header="_Image">
