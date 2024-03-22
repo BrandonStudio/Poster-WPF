@@ -197,7 +197,7 @@ public partial class MainWindow : Window
 			}
 		}
 
-		public ObservableCollection<RequestHeader> RequestHeaders { get; set; } = [ new("Allow", "*") ];
+		public ObservableCollection<RequestHeader> RequestHeaders { get; set; } = [];
 
 		/// <remarks>Do NOT try using <c>struct</c>!</remarks>
 		public class RequestHeader

@@ -112,10 +112,12 @@ public partial class MainWindow
 			switch (_responseModel.ResponseType)
 			{
 				case HttpContentType.Text:
+					memoryCopy.Position = 0;
 					using (var reader = new StreamReader(memoryCopy))
 						textResponse.Text = reader.ReadToEnd();
 					break;
 				case HttpContentType.Image:
+					memoryCopy.Position = 0;
 					var bitmap = new BitmapImage();
 					imageResponse.Source = bitmap;
 					bitmap.BeginInit();
