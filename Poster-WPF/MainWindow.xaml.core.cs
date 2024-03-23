@@ -139,13 +139,9 @@ public partial class MainWindow
 					{
 						ext = ".tmp";
 					}
-					string tempPath = Path.GetTempPath();
-					string tempFolderName = Path.GetRandomFileName();
-					string tempFolderPath = Path.Combine(tempPath, tempFolderName);
-					_tempFileFolder = Directory.CreateDirectory(tempFolderPath);
 					string tempFilePath = Path.GetRandomFileName();
 					tempFilePath = Path.ChangeExtension(tempFilePath, ext);
-					tempFilePath = Path.Combine(tempFolderPath, tempFilePath);
+					tempFilePath = Path.Combine(_responseModel.TempFolder.FullName, tempFilePath);
 					using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
 					{
 						memoryCopy.Position = 0;
