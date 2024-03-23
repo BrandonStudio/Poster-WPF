@@ -29,7 +29,7 @@ namespace Poster;
 /// <summary>
 /// MainWindow.xaml 的交互逻辑
 /// </summary>
-public partial class MainWindow : Window
+public partial class MainWindow : Window, IDisposable
 {
 	private ComboBox methodSelector, contentTypeSelector;
 	private readonly RequestModel _requestModel = new();
@@ -38,6 +38,7 @@ public partial class MainWindow : Window
 
 	protected CancellationTokenSource _sendButtonCTS;
 	private DirectoryInfo _tempFileFolder;
+	private bool _disposedValue;
 
 	public MainWindow()
 	{
@@ -45,7 +46,18 @@ public partial class MainWindow : Window
 		DataContext = this;
 		requestPanel.DataContext = _requestModel;
 		responsePanel.DataContext = _responseModel;
-		_progress = new(value => progressBar.Value = value);
+		_progress = new(value =>
+		{
+			progressBar.Value = value;
+			if (value < 100)
+			{
+				ShowHint($"Receiving {value:00.00}%");
+			}
+			else
+			{
+				ShowHint("Done.");
+			}
+		});
 	}
 
 	protected override void OnContentRendered(EventArgs e)
@@ -121,6 +133,31 @@ public partial class MainWindow : Window
 		}
 	}
 
+	private void OnFileOpenClicked(object sender, RoutedEventArgs e)
+	{
+		Process.Start(_responseModel.TempFilePath);
+	}
+
+	private void OnFolderOpenClicked(object sender, RoutedEventArgs e)
+	{
+		Process.Start(_tempFileFolder.FullName);
+	}
+
+	private void OnFileSaveClicked(object sender, RoutedEventArgs e)
+	{
+		var ext = System.IO.Path.GetExtension(_responseModel.RealFileName);
+		SaveFileDialog saveFileDialog = new()
+		{
+			FileName = _responseModel.RealFileName,
+			Filter = $"*{ext}|{ext}|All files|*",
+			// Title = "Save file",
+		};
+		if (saveFileDialog.ShowDialog(this) == true)
+		{
+			File.Copy(_responseModel.TempFilePath, saveFileDialog.FileName, true);
+		}
+	}
+
 	private async Task StartSend()
 	{
 		_sendButtonCTS?.Cancel();
@@ -172,6 +209,25 @@ public partial class MainWindow : Window
 		string original = statusBar.Text;
 		statusBar.Text = hint;
 		return original;
+	}
+
+	protected virtual void Dispose(bool disposing)
+	{
+		if (!_disposedValue)
+		{
+			if (disposing)
+			{
+				_tempFileFolder?.Delete(true);
+			}
+
+			_disposedValue = true;
+		}
+	}
+
+	public void Dispose()
+	{
+		Dispose(disposing: true);
+		GC.SuppressFinalize(this);
 	}
 
 	#region Models
@@ -254,6 +310,7 @@ public partial class MainWindow : Window
 
 		internal HttpContentHeaders ResponseContentHeaders { get; set; }
 		internal string RealFileName { get; set; }
+		internal string TempFilePath { get; set; }
 
 		#region Dispose
 		protected virtual void Dispose(bool disposing)

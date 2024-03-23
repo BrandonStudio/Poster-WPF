@@ -145,10 +145,13 @@ public partial class MainWindow
 					_tempFileFolder = Directory.CreateDirectory(tempFolderPath);
 					string tempFilePath = Path.GetRandomFileName();
 					tempFilePath = Path.ChangeExtension(tempFilePath, ext);
+					tempFilePath = Path.Combine(tempFolderPath, tempFilePath);
 					using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
 					{
+						memoryCopy.Position = 0;
 						await memoryCopy.CopyToAsync(fileStream);
 					}
+					_responseModel.TempFilePath = tempFilePath;
 					fileResponsePath.Text = tempFilePath;
 					break;
 			}
@@ -183,7 +186,7 @@ public partial class MainWindow
 			bytesReceived += bytesRead;
 			if (canReportProgress)
 			{
-				var progressPercentage = (double)bytesReceived / totalBytes * 100;
+				var progressPercentage = 100.0 * bytesReceived / totalBytes;
 				progress.Report(progressPercentage);
 			}
 		}

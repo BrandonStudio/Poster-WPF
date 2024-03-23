@@ -178,13 +178,16 @@
                   DockPanel.Dock="Top"
                   Orientation="Horizontal"
                   Margin="2">
-                  <Button Margin="2" Padding="2">
+                  <Button Margin="2" Padding="2"
+                    Click="OnFileOpenClicked">
                     _Open
                   </Button>
-                  <Button Margin="2" Padding="2">
+                  <Button Margin="2" Padding="2"
+                    Click="OnFolderOpenClicked">
                     Fol_der
                   </Button>
-                  <Button Margin="2" Padding="2">
+                  <Button Margin="2" Padding="2"
+                    Click="OnFileSaveClicked">
                     S_ave To
                   </Button>
                 </StackPanel>
