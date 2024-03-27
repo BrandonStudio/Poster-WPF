@@ -35,9 +35,19 @@ public partial class MainWindow : Window
 	private readonly RequestModel _requestModel = new();
 	private readonly ResponseModel _responseModel = new();
 	private Progress<double> _progress;
+	private bool _progressBarIndeterminate;
 
 	protected CancellationTokenSource _sendButtonCTS;
-	private bool _disposedValue;
+
+	public bool ProgressBarIndeterminate
+	{
+		get => _progressBarIndeterminate;
+		set
+		{
+			_progressBarIndeterminate = value;
+			progressBar.IsIndeterminate = value;
+		}
+	}
 
 	public MainWindow()
 	{
@@ -47,10 +57,11 @@ public partial class MainWindow : Window
 		responsePanel.DataContext = _responseModel;
 		_progress = new(value =>
 		{
+			ProgressBarIndeterminate = false;
 			progressBar.Value = value;
-			if (value < 100)
+			if (value < 1)
 			{
-				ShowHint($"Receiving {value:00.00}%");
+				ShowHint($"Receiving {value:P0.00}");
 			}
 			else
 			{
@@ -91,6 +102,56 @@ public partial class MainWindow : Window
 			urlText.Text = "http://" + urlInput.Text;
 		else
 			urlText.Text = urlInput.Text;
+	}
+
+	private void OnMethodChanged(object sender, SelectionChangedEventArgs e)
+	{
+		string method = e.AddedItems[0].ToString();
+		contentTypeSelector.IsEnabled = requestTab.IsEnabled =
+			method.HasMethodBody();
+	}
+
+	private void OnContentTypeChanged(object sender, SelectionChangedEventArgs e)
+	{
+		string selectedValue = e.AddedItems.Cast<string>().First();
+		var type = selectedValue.ToContentType();
+		requestTab.SelectedIndex = (int)HttpContentTypeConverter.Default.Convert(type, typeof(int), null, null);
+	}
+
+	private void OnHeadersTabChanged(object sender, SelectionChangedEventArgs e)
+	{
+		if (e.AddedItems[0] == headersInput.Parent)
+			SetHeadersText();
+		else
+			SetHeadersGrid();
+	}
+
+	private const string DragImageBits = "DragImageBits";
+
+	private void OnImageDragOver(object sender, DragEventArgs e)
+	{
+		e.Handled = true;
+		if (e.Data.GetDataPresent(DragImageBits))
+		{
+			ShowHint("Drop to upload.");
+			e.Effects = DragDropEffects.Copy;
+			return;
+		}
+		else
+		{
+			ShowHint("Only files are allowed.");
+		}
+		e.Effects = DragDropEffects.None;
+	}
+
+	private void OnImageDrop(object sender, DragEventArgs e)
+	{
+		if (!e.Data.GetDataPresent(DragImageBits))
+			return;
+		MemoryStream imageStream = (MemoryStream)e.Data.GetData(DragImageBits);
+		var bitmap = imageStream.GetDragImage();
+		imageInput.Source = bitmap;
+		ShowHint("Image selected.");
 	}
 
 	private void OnFileDragOver(object sender, DragEventArgs e)
@@ -183,6 +244,20 @@ public partial class MainWindow : Window
 		progressBar.Value = 0;
 	}
 
+	private void SetHeadersGrid()
+	{
+		var headers = headersInput.Text.ToHeaders();
+		_requestModel.RequestHeaders = new(headers);
+		_requestModel.NotifyChange(nameof(RequestModel.RequestHeaders));
+	}
+
+	private void SetHeadersText()
+	{
+		var text = string.Join("\n", _requestModel.RequestHeaders.Select(header =>
+			$"{header.Name}: {string.Join(", ", header.Value)}"));
+		headersInput.Text = text;
+	}
+
 	private string DumpHeaders(HttpContentHeaders headers) =>
 		string.Join("\n", headers.Select(header => $"{header.Key}: {string.Join(", ", header.Value)}"));
 
@@ -198,125 +273,4 @@ public partial class MainWindow : Window
 		statusBar.Text = hint;
 		return original;
 	}
-
-	#region Models
-	public class RequestModel : INotifyPropertyChanged
-	{
-		private HttpContentType _requestType;
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		public RequestModel()
-		{
-			RequestHeaders.CollectionChanged +=
-				(sender, e) => PropertyChanged?.Invoke(this, new(nameof(RequestHeaders)));
-		}
-
-		public HttpContentType RequestType
-		{
-			get => _requestType;
-			set
-			{
-				_requestType = value;
-				PropertyChanged?.Invoke(this, new(nameof(RequestType)));
-			}
-		}
-
-		public ObservableCollection<RequestHeader> RequestHeaders { get; set; } = [];
-
-		/// <remarks>Do NOT try using <c>struct</c>!</remarks>
-		public class RequestHeader
-		{
-			public string Name { get; set; }
-			public string Value { get; set; }
-
-			public RequestHeader() { }
-			public RequestHeader(string name, string value)
-			{
-				Name = name;
-				Value = value;
-			}
-
-			public static RequestHeader[] ParseHeaders(string text)
-			{
-				var headers = text.Split(['\n'], StringSplitOptions.RemoveEmptyEntries);
-				return headers.Select(header =>
-				{
-					var parts = header.Split([':'], 2);
-					return new RequestHeader(parts[0], parts[1]);
-				}).ToArray();
-			}
-		}
-	}
-
-	public class ResponseModel : INotifyPropertyChanged, IDisposable
-	{
-		private HttpContentType _responseType = HttpContentType.Text;
-		private MemoryStream _responseStream;
-		private bool _disposedValue;
-
-		public event PropertyChangedEventHandler PropertyChanged;
-
-		public HttpContentType ResponseType
-		{
-			get => _responseType;
-			set
-			{
-				_responseType = value;
-				PropertyChanged?.Invoke(this, new(nameof(ResponseType)));
-			}
-		}
-
-		public DirectoryInfo TempFolder { get; } = GetTempFolder();
-
-		public MemoryStream ResponseStream
-		{
-			get => _responseStream;
-			set
-			{
-				_responseStream?.Dispose();
-				_responseStream = value;
-			}
-		}
-
-		internal HttpContentHeaders ResponseContentHeaders { get; set; }
-		internal string RealFileName { get; set; }
-		internal string TempFilePath { get; set; }
-
-		static DirectoryInfo GetTempFolder()
-		{
-			string tempPath = System.IO.Path.GetTempPath();
-			string tempFolderName = System.IO.Path.GetRandomFileName();
-			string tempFolderPath = System.IO.Path.Combine(tempPath, tempFolderName);
-			return Directory.CreateDirectory(tempFolderPath);
-		}
-
-		#region Dispose
-		protected virtual void Dispose(bool disposing)
-		{
-			if (!_disposedValue)
-			{
-				if (disposing)
-				{
-					_responseStream?.Dispose();
-				}
-
-				TempFolder?.Delete(true);
-				_disposedValue = true;
-			}
-		}
-
-		~ResponseModel()
-		{
-			Dispose(disposing: false);
-		}
-
-		public void Dispose()
-		{
-			Dispose(disposing: true);
-			GC.SuppressFinalize(this);
-		}
-		#endregion
-	}
-	#endregion
 }

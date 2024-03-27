@@ -5,10 +5,16 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Poster"
         mc:Ignorable="d"
-        Title="MainWindow" MinHeight="400" MinWidth="600" Padding="5">
+        d:DataContext="{d:DesignInstance Type=local:MainWindow}"
+        Title="Poster" MinHeight="400" MinWidth="600" Padding="5">
   <Window.Resources>
     <local:HttpContentTypeConverter x:Key="contentTypeConverter" />
+    <local:ProgressStateConverter x:Key="progressStateConverter" />
   </Window.Resources>
+  <Window.TaskbarItemInfo>
+    <TaskbarItemInfo ProgressValue="{Binding Value, ElementName=progressBar}"
+                     ProgressState="{Binding IsIndeterminate, ElementName=progressBar, Converter={StaticResource progressStateConverter}}"/>
+  </Window.TaskbarItemInfo>
   <DockPanel>
     <DockPanel DockPanel.Dock="Top" Margin="2">
       <Label DockPanel.Dock="Left" Margin="2" VerticalContentAlignment="Center">URL:</Label>
@@ -30,7 +36,12 @@
     <StatusBar DockPanel.Dock="Bottom" Padding="2" HorizontalContentAlignment="Stretch">
       <Grid HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
         <TextBlock x:Name="statusBar" Text="Ready" />
-        <ProgressBar x:Name="progressBar" Width="80" Height="{Binding ActualHeight, ElementName=statusBar, Mode=OneWay}" HorizontalAlignment="Right" />
+        <ProgressBar
+          x:Name="progressBar"
+          Width="80"
+          Height="{Binding ActualHeight, ElementName=statusBar, Mode=OneWay}"
+          HorizontalAlignment="Right"
+          Maximum="1" />
       </Grid>
     </StatusBar>
     <Grid Margin="5">
@@ -39,27 +50,30 @@
         <ColumnDefinition Width="55*" />
       </Grid.ColumnDefinitions>
       <GroupBox Header="Request" Grid.Column="0" Margin="2" Padding="2">
-        <DockPanel x:Name="requestPanel">
+        <DockPanel x:Name="requestPanel" d:DataContext="{d:DesignInstance Type=local:RequestModel}">
           <local:HintLine x:Name="methodLine" DockPanel.Dock="Top" Hint="Method: ">
             <ComboBox
               x:Uid="methodSelector"
+              VerticalContentAlignment="Center"
               IsEditable="True"
-              VerticalContentAlignment="Center">
+              SelectionChanged="OnMethodChanged">
             </ComboBox>
           </local:HintLine>
           <local:HintLine DockPanel.Dock="Top" Hint="Content-Type: ">
             <ComboBox
               x:Uid="contentTypeSelector"
               VerticalAlignment="Center"
-              IsEditable="True">
+              IsEditable="True"
+              SelectionChanged="OnContentTypeChanged">
             </ComboBox>
           </local:HintLine>
           <Expander Name="headersExpander"
             DockPanel.Dock="Top"
             Header="Headers" ExpandDirection="Down" IsTabStop="True">
-            <TabControl>
+            <TabControl x:Name="headersTab" SelectionChanged="OnHeadersTabChanged">
               <TabItem Header="Grid">
                 <DataGrid
+                  x:Name="headersGrid"
                   ColumnWidth="*"
                   Margin="2" Padding="2"
                   ItemsSource="{Binding RequestHeaders}"
@@ -71,10 +85,9 @@
                     </DataGrid.Columns>
                   </DataGrid>
               </TabItem>
-              <TabItem Header="Text" IsEnabled="False">
+              <TabItem Header="Text">
                 <TextBox x:Name="headersInput"
-                  Padding="5"
-                  MinHeight="50"
+                  Padding="5" MinHeight="60"
                   TextWrapping="Wrap"
                   AcceptsReturn="True" />
               </TabItem>
@@ -82,7 +95,7 @@
           </Expander>
           <Separator DockPanel.Dock="Top" Width="1" />
           <TabControl x:Name="requestTab" SelectedIndex="{Binding RequestType, Converter={StaticResource contentTypeConverter}}">
-            <TabItem Header="Text">
+            <TabItem Header="Text" IsSelected="True">
               <TextBox x:Name="textInput"
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 Padding="5"
@@ -91,9 +104,13 @@
                 AllowDrop="True"/>
             </TabItem>
             <TabItem Header="Image" IsEnabled="False">
-              <DockPanel x:Name="imageArea">
+              <DockPanel x:Name="imageArea"
+                HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                AllowDrop="True" PreviewDragOver="OnImageDragOver" Drop="OnImageDrop">
                 <Label DockPanel.Dock="Top">Drag image here (not file).</Label>
-                <Image x:Name="imageInput" />
+                <Viewbox PreviewDragOver="OnImageDragOver">
+                  <Image x:Name="imageInput" />
+                </Viewbox>
               </DockPanel>
             </TabItem>
             <TabItem Header="File">
@@ -143,7 +160,7 @@
         </DockPanel>
       </GroupBox>
       <GroupBox Header="Response" Grid.Column="1" Margin="2" Padding="2">
-        <DockPanel x:Name="responsePanel">
+        <DockPanel x:Name="responsePanel" d:DataContext="{d:DesignInstance Type=local:ResponseModel}">
           <Expander DockPanel.Dock="Top" HorizontalContentAlignment="Stretch">
             <Expander.Header>
               <DockPanel HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">

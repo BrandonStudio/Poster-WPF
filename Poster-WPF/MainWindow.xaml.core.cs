@@ -16,12 +16,11 @@ public partial class MainWindow
 {
 	private HttpContent GetContent()
 	{
-		HttpContent content = null;
+		HttpContent content;
 		switch (_requestModel.RequestType)
 		{
 			case HttpContentType.Text:
-				if (!string.IsNullOrWhiteSpace(textInput.Text))
-					content = new StringContent(textInput.Text, null, mediaType: contentTypeSelector.Text);
+				content = new StringContent(textInput.Text, null, mediaType: contentTypeSelector.Text);
 				break;
 			case HttpContentType.Image:
 				var source = imageInput.Source as BitmapSource;
@@ -46,6 +45,7 @@ public partial class MainWindow
 				content = new StreamContent(File.OpenRead(inputFilePath.Text));
 				break;
 		}
+		content.Headers.ContentType = new(contentTypeSelector.Text);
 		return content;
 	}
 
@@ -53,6 +53,7 @@ public partial class MainWindow
 	private async Task SendAsync(CancellationToken cancellationToken)
 	{
 		cancellationToken.ThrowIfCancellationRequested();
+		ProgressBarIndeterminate = true;
 		HttpClient client = new()
 		{
 			Timeout = TimeSpan.FromSeconds(120)
@@ -60,15 +61,9 @@ public partial class MainWindow
 		client.DefaultRequestHeaders.UserAgent.Add(
 			new("Poster", Assembly.GetExecutingAssembly().GetName().Version.ToString()));
 		HttpContent requestContent = null;
-		switch (methodSelector.SelectedValue.ToString())
+		if (methodSelector.SelectedValue.ToString().HasMethodBody())
 		{
-			case "GET":
-			case "HEAD":
-			case "OPTIONS":
-				break;
-			default:
-				requestContent = GetContent();
-				break;
+			requestContent = GetContent();
 		}
 		try
 		{
@@ -76,6 +71,10 @@ public partial class MainWindow
 			{
 				Content = requestContent,
 			};
+			if (headersTab.SelectedIndex == 1)
+			{
+				SetHeadersGrid();
+			}
 			foreach (var header in _requestModel.RequestHeaders)
 			{
 				var name = header.Name;
@@ -96,6 +95,7 @@ public partial class MainWindow
 				statusBar.Text = "Success";
 			}
 
+			ProgressBarIndeterminate = false;
 			using var responseContent = result.Content;
 			using var responseStream = await responseContent.ReadAsStreamAsync();
 			var responseHeaders = responseContent.Headers;
@@ -145,7 +145,7 @@ public partial class MainWindow
 					using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
 					{
 						memoryCopy.Position = 0;
-						await memoryCopy.CopyToAsync(fileStream);
+						await memoryCopy.CopyToAsync(fileStream, 81920, cancellationToken);
 					}
 					_responseModel.TempFilePath = tempFilePath;
 					fileResponsePath.Text = tempFilePath;
@@ -162,10 +162,15 @@ public partial class MainWindow
 			}
 			statusText.Text = statusBar.Text = msg;
 		}
+		finally
+		{
+			ProgressBarIndeterminate = false;
+			progressBar.Value = 0;
+		}
 	}
 
 	private async Task ReadStreamAsnyc(
-		Stream inputStream, MemoryStream outputStream,
+		Stream inputStream, Stream outputStream,
 		long totalBytes, IProgress<double> progress, CancellationToken cancellationToken)
 	{
 		var canReportProgress = totalBytes != -1L;
@@ -182,7 +187,7 @@ public partial class MainWindow
 			bytesReceived += bytesRead;
 			if (canReportProgress)
 			{
-				var progressPercentage = 100.0 * bytesReceived / totalBytes;
+				var progressPercentage = (double)bytesReceived / totalBytes;
 				progress.Report(progressPercentage);
 			}
 		}

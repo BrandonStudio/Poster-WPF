@@ -34,5 +34,14 @@ namespace Poster
 			new("PATCH"),
 			HttpMethod.Trace
 		];
+
+		internal static bool HasMethodBody(this string method)
+		{
+			return method switch
+			{
+				"GET" or "HEAD" or "OPTIONS" => false,
+				_ => true,
+			};
+		}
 	}
 }

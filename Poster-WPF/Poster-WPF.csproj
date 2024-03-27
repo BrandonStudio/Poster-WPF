@@ -71,6 +71,8 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="RequestModel.cs" />
+    <Compile Include="ResponseModel.cs" />
     <Page Include="HintLine.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -84,10 +86,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Constants.cs" />
+    <Compile Include="Converters.cs" />
     <Compile Include="Helpers.cs" />
     <Compile Include="HintLine.xaml.cs">
       <DependentUpon>HintLine.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Interops.cs" />
     <Compile Include="MainWindow.xaml.core.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>

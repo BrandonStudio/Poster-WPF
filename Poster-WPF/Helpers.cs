@@ -9,10 +9,11 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Windows.Data;
 using System.Diagnostics;
+using System.Windows.Shell;
 
 namespace Poster;
 
-static class Helpers
+static partial class Helpers
 {
 	public static UIElement FindUid(this DependencyObject parent, string uid)
 	{
@@ -43,6 +44,22 @@ static class Helpers
 		return HttpContentType.File;
 	}
 
+	public static IEnumerable<RequestModel.RequestHeader> ToHeaders(this string text)
+	{
+		foreach (var header in text.Split(['\n'], StringSplitOptions.RemoveEmptyEntries))
+		{
+			var parts = header.Split([':'], 2);
+			if (parts.Length < 2)
+			{
+				yield return new(parts[0], string.Empty);
+				continue;
+			}
+			var values = parts[1].Split([','], StringSplitOptions.RemoveEmptyEntries);
+			foreach (var value in values)
+				yield return new(parts[0], value.Trim());
+		}
+	}
+
 	private static readonly string[] s_textCTs =
 	[
 		"application/json",
@@ -60,47 +77,10 @@ static class Helpers
 	];
 }
 
+[Flags]
 public enum HttpContentType
 {
-	Text,
-	Image,
-	File,
-}
-
-public class HttpContentTypeConverter : IValueConverter
-{
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		if (targetType == typeof(string))
-		{
-			if (value is HttpContentType ct)
-				return ct.ToString();
-			return HttpContentType.File.ToString();
-		}
-		else if (targetType.IsValueType)
-		{
-			if (value is HttpContentType ct)
-				return (int)ct;
-			return (int)HttpContentType.File;
-		}
-		else
-		{
-			Debug.Assert(false);
-			throw new NotSupportedException();
-		}
-	}
-
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
-	{
-		if (value is string s)
-		{
-			if (!Enum.TryParse(s, out HttpContentType ct))
-				ct = HttpContentType.File;
-			return ct;
-		}
-		else if (value is ValueType)
-			return (HttpContentType)(int)value;
-		else
-			return HttpContentType.File;
-	}
+	Text = 1,
+	Image = 2,
+	File = 4,
 }
