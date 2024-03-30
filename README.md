@@ -5,7 +5,7 @@
 
 ## Installation
 ### ClickOnce
-[Click here](microsoft-edge:https://static.brandonstudio.site/Apps/Releases/Poster-WPF/Poster-WPF.application) to install and run.
+<a href="microsoft-edge:https://static.brandonstudio.site/Apps/Releases/Poster-WPF/Poster-WPF.application">Click here</a> to install and run.
 
 ### Portable
 [Download from release](https://github.com/BrandonStudio/Poster-WPF/releases/latest).
