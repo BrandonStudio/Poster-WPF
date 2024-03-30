@@ -118,10 +118,14 @@ public partial class MainWindow : Window
 		requestTab.SelectedIndex = (int)HttpContentTypeConverter.Default.Convert(type, typeof(int), null, null);
 	}
 
-	private void OnHeadersTabChanged(object sender, SelectionChangedEventArgs e)
+	private void OnHeadersTabChanged(object sender, DependencyPropertyChangedEventArgs e)
 	{
-		if (e.AddedItems[0] == headersInput.Parent)
+		if ((bool)e.NewValue)
+		{
 			SetHeadersText();
+			headersInput.Select(headersInput.Text.Length, 0);
+			headersInput.Focus();
+		}
 		else
 			SetHeadersGrid();
 	}

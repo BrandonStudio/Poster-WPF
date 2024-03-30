@@ -70,7 +70,7 @@
           <Expander Name="headersExpander"
             DockPanel.Dock="Top"
             Header="Headers" ExpandDirection="Down" IsTabStop="True">
-            <TabControl x:Name="headersTab" SelectionChanged="OnHeadersTabChanged">
+            <TabControl x:Name="headersTab">
               <TabItem Header="Grid">
                 <DataGrid
                   x:Name="headersGrid"
@@ -89,7 +89,8 @@
                 <TextBox x:Name="headersInput"
                   Padding="5" MinHeight="60"
                   TextWrapping="Wrap"
-                  AcceptsReturn="True" />
+                  AcceptsReturn="True"
+                  IsVisibleChanged="OnHeadersTabChanged" />
               </TabItem>
             </TabControl>
           </Expander>
