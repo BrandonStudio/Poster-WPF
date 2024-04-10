@@ -99,8 +99,8 @@
             <TabItem Header="Text" IsSelected="True">
               <TextBox x:Name="textInput"
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
-                Padding="5"
-                TextWrapping="Wrap"
+                Margin="5" Padding="5"
+                TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
                 AcceptsReturn="True"
                 AllowDrop="True"/>
             </TabItem>
@@ -184,7 +184,7 @@
                 VerticalAlignment="Stretch" HorizontalAlignment="Stretch"
                 Margin="5" Padding="5"
                 IsReadOnly="True" AcceptsReturn="True"
-                TextWrapping="Wrap">
+                TextWrapping="Wrap" VerticalScrollBarVisibility="Auto">
               </TextBox>
             </TabItem>
             <TabItem Header="_Image">

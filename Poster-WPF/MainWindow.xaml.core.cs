@@ -128,10 +128,24 @@ public partial class MainWindow
 				case HttpContentType.File:
 				default:
 					string fileName = responseHeaders.ContentDisposition.FileName;
+					fileName = fileName.Trim('"', '\'', ' ');
 					if (string.IsNullOrWhiteSpace(fileName))
 					{
 						var path = urlText.Text.Split('/').Last();
 						fileName = Path.GetFileName(path);
+					}
+					else
+					{
+						var chs = Path.GetInvalidFileNameChars();
+						var array = fileName.ToCharArray();
+						for (int i = 0; i < array.Length; i++)
+						{
+							if (chs.Contains(array[i]))
+							{
+								array[i] = '_';
+							}
+						}
+						fileName = new string(array);
 					}
 					_responseModel.RealFileName = fileName;
 					string ext = Path.GetExtension(fileName);
