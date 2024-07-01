@@ -61,11 +61,12 @@ public partial class MainWindow : Window
 			progressBar.Value = value;
 			if (value < 1)
 			{
-				ShowHint($"Receiving {value:P0.00}");
+				ShowHint($"Receiving {value:0.00}%");
 			}
 			else
 			{
 				ShowHint("Done.");
+				progressBar.Value = 0;
 			}
 		});
 	}
