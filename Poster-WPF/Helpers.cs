@@ -66,6 +66,7 @@ static partial class Helpers
 		"application/xml",
 		"application/javascript",
 		"application/hta",
+		"application/x-ndjson",
 		"application/x-www-form-urlencoded",
 		"application/x-javascript",
 		"application/x-latex",

@@ -56,7 +56,8 @@
               x:Uid="methodSelector"
               VerticalContentAlignment="Center"
               IsEditable="True"
-              SelectionChanged="OnMethodChanged">
+              SelectionChanged="OnMethodChanged"
+              GotFocus="ExpandOnClick">
             </ComboBox>
           </local:HintLine>
           <local:HintLine DockPanel.Dock="Top" Hint="Content-Type: ">
@@ -64,7 +65,8 @@
               x:Uid="contentTypeSelector"
               VerticalAlignment="Center"
               IsEditable="True"
-              SelectionChanged="OnContentTypeChanged">
+              SelectionChanged="OnContentTypeChanged"
+              GotFocus="ExpandOnClick">
             </ComboBox>
           </local:HintLine>
           <Expander Name="headersExpander"

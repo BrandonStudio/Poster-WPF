@@ -94,6 +94,14 @@ public partial class MainWindow : Window
 		}
 	}
 
+	private void ExpandOnClick(object sender, RoutedEventArgs e)
+	{
+		if (sender is ComboBox comboBox)
+		{
+			comboBox.IsDropDownOpen = true;
+		}
+	}
+
 	private void OnUrlChanged(object sender, TextChangedEventArgs e)
 	{
 		if (string.IsNullOrWhiteSpace(urlInput.Text))
@@ -150,12 +158,12 @@ public partial class MainWindow : Window
 
 	private void OnImageDrop(object sender, DragEventArgs e)
 	{
-		if (!e.Data.GetDataPresent(DragImageBits))
-			return;
-		MemoryStream imageStream = (MemoryStream)e.Data.GetData(DragImageBits);
-		var bitmap = imageStream.GetDragImage();
-		imageInput.Source = bitmap;
-		ShowHint("Image selected.");
+		//if (!e.Data.GetDataPresent(DragImageBits))
+		//	return;
+		//MemoryStream imageStream = (MemoryStream)e.Data.GetData(DragImageBits);
+		//var bitmap = imageStream.GetDragImage();
+		//imageInput.Source = bitmap;
+		//ShowHint("Image selected.");
 	}
 
 	private void OnFileDragOver(object sender, DragEventArgs e)

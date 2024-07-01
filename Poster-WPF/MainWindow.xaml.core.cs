@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
+using System.Net.Http.Headers;
 
 namespace Poster;
 
@@ -23,23 +26,23 @@ public partial class MainWindow
 				content = new StringContent(textInput.Text, null, mediaType: contentTypeSelector.Text);
 				break;
 			case HttpContentType.Image:
-				var source = imageInput.Source as BitmapSource;
-				if (source is BitmapImage bitmap)
-				{
-					content = new StreamContent(bitmap.StreamSource);
-				}
-				else
-				{
-					var encoder = new PngBitmapEncoder(); // Use JpegBitmapEncoder or other encoders according to your needs
-					encoder.Frames.Add(BitmapFrame.Create(source));
+				//var source = imageInput.Source as BitmapSource;
+				//if (source is BitmapImage bitmap)
+				//{
+				//	content = new StreamContent(bitmap.StreamSource);
+				//}
+				//else
+				//{
+				//	var encoder = new PngBitmapEncoder(); // Use JpegBitmapEncoder or other encoders according to your needs
+				//	encoder.Frames.Add(BitmapFrame.Create(source));
 
-					var stream = new MemoryStream();
-					encoder.Save(stream);
-					stream.Position = 0; // Reset stream position
+				//	var stream = new MemoryStream();
+				//	encoder.Save(stream);
+				//	stream.Position = 0; // Reset stream position
 
-					content = new StreamContent(stream);
-				}
-				break;
+				//	content = new StreamContent(stream);
+				//}
+				//break;
 			case HttpContentType.File:
 			default:
 				content = new StreamContent(File.OpenRead(inputFilePath.Text));
@@ -60,7 +63,7 @@ public partial class MainWindow
 		};
 		client.DefaultRequestHeaders.UserAgent.Add(
 			new("Poster", Assembly.GetExecutingAssembly().GetName().Version.ToString()));
-		HttpContent requestContent = null;
+		HttpContent? requestContent = null;
 		if (methodSelector.SelectedValue.ToString().HasMethodBody())
 		{
 			requestContent = GetContent();
@@ -99,13 +102,13 @@ public partial class MainWindow
 			using var responseContent = result.Content;
 			using var responseStream = await responseContent.ReadAsStreamAsync();
 			var responseHeaders = responseContent.Headers;
-			responseInfo.Text = DumpHeaders(responseHeaders);
+			responseInfo.Text = DumpHeaders(result.Headers) + '\n' + DumpHeaders(responseHeaders);
 			_responseModel.ResponseContentHeaders = responseHeaders;
-			string contentType = responseHeaders.ContentType?.MediaType;
+			string? contentType = responseHeaders.ContentType?.MediaType;
 			_responseModel.ResponseType =
 				contentType is null ? HttpContentType.Text : contentType.ToContentType();
 			var totalBytes = responseContent.Headers.ContentLength.GetValueOrDefault(-1L);
-			MemoryStream memoryCopy = new();
+			MemoryStream? memoryCopy = new();
 			_responseModel.ResponseStream = memoryCopy;
 			await ReadStreamAsnyc(
 				responseStream, memoryCopy, totalBytes, _progress, cancellationToken);
@@ -127,8 +130,8 @@ public partial class MainWindow
 					break;
 				case HttpContentType.File:
 				default:
-					string fileName = responseHeaders.ContentDisposition.FileName;
-					fileName = fileName.Trim('"', '\'', ' ');
+					string? fileName = responseHeaders.ContentDisposition?.FileName;
+					fileName = fileName?.Trim('"', '\'', ' ');
 					if (string.IsNullOrWhiteSpace(fileName))
 					{
 						var path = urlText.Text.Split('/').Last();
@@ -137,7 +140,7 @@ public partial class MainWindow
 					else
 					{
 						var chs = Path.GetInvalidFileNameChars();
-						var array = fileName.ToCharArray();
+						var array = fileName!.ToCharArray();
 						for (int i = 0; i < array.Length; i++)
 						{
 							if (chs.Contains(array[i]))
@@ -206,4 +209,7 @@ public partial class MainWindow
 			}
 		}
 	}
+
+	private string DumpHeaders(HttpHeaders headers) =>
+		string.Join("\n", headers.Select(header => $"{header.Key}: {string.Join(", ", header.Value)}"));
 }
