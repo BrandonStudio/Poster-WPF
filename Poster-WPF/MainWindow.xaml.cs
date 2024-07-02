@@ -115,9 +115,13 @@ public partial class MainWindow : Window
 
 	private void OnMethodChanged(object sender, SelectionChangedEventArgs e)
 	{
-		string method = e.AddedItems[0].ToString();
-		contentTypeSelector.IsEnabled = requestTab.IsEnabled =
-			method.HasMethodBody();
+		bool enabled = e.AddedItems.Count == 0;
+		if (!enabled)
+		{
+			string method = e.AddedItems[0].ToString();
+			enabled = method.HasMethodBody();
+		}
+		contentTypeSelector.IsEnabled = requestTab.IsEnabled = enabled;
 	}
 
 	private void OnContentTypeChanged(object sender, SelectionChangedEventArgs e)
