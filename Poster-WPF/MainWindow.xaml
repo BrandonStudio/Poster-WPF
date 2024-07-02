@@ -10,6 +10,7 @@
   <Window.Resources>
     <local:HttpContentTypeConverter x:Key="contentTypeConverter" />
     <local:ProgressStateConverter x:Key="progressStateConverter" />
+    <local:RatioValueConverter x:Key="ratioValueConverter" />
   </Window.Resources>
   <Window.TaskbarItemInfo>
     <TaskbarItemInfo ProgressValue="{Binding Value, ElementName=progressBar}"
@@ -164,19 +165,23 @@
       </GroupBox>
       <GroupBox Header="Response" Grid.Column="1" Margin="2" Padding="2">
         <DockPanel x:Name="responsePanel" d:DataContext="{d:DesignInstance Type=local:ResponseModel}">
-          <Expander DockPanel.Dock="Top" HorizontalContentAlignment="Stretch">
+          <Expander DockPanel.Dock="Top"
+            MaxHeight="{Binding Path=ActualHeight, ElementName=responsePanel, Converter={StaticResource ratioValueConverter}, ConverterParameter='0.5', Mode=OneWay}"
+            HorizontalContentAlignment="Stretch">
             <Expander.Header>
-              <DockPanel HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}">
+              <DockPanel
+                HorizontalAlignment="{Binding HorizontalAlignment, RelativeSource={RelativeSource AncestorType=ContentPresenter}, Mode=OneWayToSource}"
+                ToolTip="{Binding Text, ElementName=responseInfo}">
                 <Label>Status:</Label>
                 <TextBlock x:Name="statusText"
                   Margin="2" Padding="2"
-                  VerticalAlignment="Center"
-                  ToolTip="{Binding Text, ElementName=statusText}"/>
+                  VerticalAlignment="Center"/>
               </DockPanel>
             </Expander.Header>
             <TextBox x:Name="responseInfo"
               Margin="5" Padding="5"
-              IsReadOnly="True" AcceptsReturn="True">
+              IsReadOnly="True" AcceptsReturn="True"
+              VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
             </TextBox>
           </Expander>
           <Separator DockPanel.Dock="Top" Width="1" />

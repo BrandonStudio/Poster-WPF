@@ -57,7 +57,11 @@ public partial class MainWindow
 	{
 		cancellationToken.ThrowIfCancellationRequested();
 		ProgressBarIndeterminate = true;
-		HttpClient client = new()
+		HttpClientHandler httpClientHandler = new()
+		{
+			AllowAutoRedirect = false,
+		};
+		HttpClient client = new(httpClientHandler)
 		{
 			Timeout = TimeSpan.FromSeconds(120)
 		};
@@ -88,14 +92,25 @@ public partial class MainWindow
 				message, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
 			statusText.Text = $"{(int)result.StatusCode} {result.StatusCode}";
-			if (!result.IsSuccessStatusCode)
+			int code = (int)result.StatusCode;
+			if (code >= 100 && code < 200)
 			{
-				MarkError();
+				statusText.Foreground = new SolidColorBrush(Colors.Black);
+				statusBar.Text = "Informational";
 			}
-			else
+			else if (code >= 200 && code < 300)
 			{
 				statusText.Foreground = new SolidColorBrush(Colors.Green);
 				statusBar.Text = "Success";
+			}
+			else if (code >= 300 && code < 400)
+			{
+				statusText.Foreground = new SolidColorBrush(Colors.Orange);
+				statusBar.Text = "Redirect";
+			}
+			else
+			{
+				MarkError();
 			}
 
 			ProgressBarIndeterminate = false;
