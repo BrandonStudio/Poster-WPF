@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -12,10 +14,10 @@ namespace Poster;
 public class ResponseModel : INotifyPropertyChanged, IDisposable
 {
 	private HttpContentType _responseType = HttpContentType.Text;
-	private MemoryStream _responseStream;
+	private MemoryStream? _responseStream;
 	private bool _disposedValue;
 
-	public event PropertyChangedEventHandler PropertyChanged;
+	public event PropertyChangedEventHandler? PropertyChanged;
 
 	public HttpContentType ResponseType
 	{
@@ -29,7 +31,7 @@ public class ResponseModel : INotifyPropertyChanged, IDisposable
 
 	public DirectoryInfo TempFolder { get; } = GetTempFolder();
 
-	public MemoryStream ResponseStream
+	public MemoryStream? ResponseStream
 	{
 		get => _responseStream;
 		set
@@ -39,15 +41,15 @@ public class ResponseModel : INotifyPropertyChanged, IDisposable
 		}
 	}
 
-	internal HttpContentHeaders ResponseContentHeaders { get; set; }
-	internal string RealFileName { get; set; }
-	internal string TempFilePath { get; set; }
+	internal HttpContentHeaders? ResponseContentHeaders { get; set; }
+	internal string? RealFileName { get; set; }
+	internal string? TempFilePath { get; set; }
 
 	static DirectoryInfo GetTempFolder()
 	{
-		string tempPath = System.IO.Path.GetTempPath();
-		string tempFolderName = System.IO.Path.GetRandomFileName();
-		string tempFolderPath = System.IO.Path.Combine(tempPath, tempFolderName);
+		string tempPath = Path.GetTempPath();
+		string tempFolderName = Path.GetRandomFileName();
+		string tempFolderPath = Path.Combine(tempPath, tempFolderName);
 		return Directory.CreateDirectory(tempFolderPath);
 	}
 

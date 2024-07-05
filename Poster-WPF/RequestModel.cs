@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -12,7 +14,7 @@ public class RequestModel : INotifyPropertyChanged
 {
 	private HttpContentType _requestType = HttpContentType.Text;
 
-	public event PropertyChangedEventHandler PropertyChanged;
+	public event PropertyChangedEventHandler? PropertyChanged;
 
 	public RequestModel()
 	{
@@ -37,8 +39,8 @@ public class RequestModel : INotifyPropertyChanged
 	/// <remarks>Do NOT try using <c>struct</c>!</remarks>
 	public class RequestHeader
 	{
-		public string Name { get; set; }
-		public string Value { get; set; }
+		public string Name { get; set; } = null!;
+		public string Value { get; set; } = null!;
 
 		public RequestHeader() { }
 		public RequestHeader(string name, string value)

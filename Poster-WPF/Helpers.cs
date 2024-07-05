@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,7 @@ namespace Poster;
 
 static partial class Helpers
 {
-	public static UIElement FindUid(this DependencyObject parent, string uid)
+	public static UIElement? FindUid(this DependencyObject parent, string uid)
 	{
 		var count = VisualTreeHelper.GetChildrenCount(parent);
 		if (count == 0) return null;

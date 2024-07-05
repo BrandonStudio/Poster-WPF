@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -38,7 +40,7 @@ static partial class Helpers
 	public static BitmapSource GetDragImage(this MemoryStream imageStream)
 	{
 		imageStream.Seek(0, SeekOrigin.Begin);
-		BinaryReader br = new BinaryReader(imageStream);
+		BinaryReader br = new(imageStream);
 		ShDragImage shDragImage;
 		shDragImage.sizeDragImage.cx = br.ReadInt32();
 		shDragImage.sizeDragImage.cy = br.ReadInt32();

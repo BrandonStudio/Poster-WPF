@@ -1,4 +1,6 @@
-﻿using System;
+#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,15 +29,15 @@ namespace Poster
             InitializeComponent();
         }
 
-        protected override void OnInitialized(EventArgs e)
-        {
-            base.OnInitialized(e);
+        //protected override void OnInitialized(EventArgs e)
+        //{
+        //    base.OnInitialized(e);
 
-            var content = new ContentPresenter
-            {
-                Content = MainContent
-            };
-        }
+        //    var content = new ContentPresenter
+        //    {
+        //        Content = MainContent
+        //    };
+        //}
 
         public string Hint
         {
@@ -61,7 +63,7 @@ namespace Poster
                 new PropertyMetadata((o, e) =>
                 {
                     var ctrl = o as HintLine;
-                    ctrl.hintLabel.Content = e.NewValue;
+                    ctrl!.hintLabel.Content = e.NewValue;
                 }));
 
         public static readonly DependencyProperty HintWidthProperty =
@@ -70,7 +72,7 @@ namespace Poster
                 new PropertyMetadata((o, e) =>
                 {
                     var ctrl = o as HintLine;
-                    ctrl.hintLabel.Width = (double)e.NewValue;
+                    ctrl!.hintLabel.Width = (double)e.NewValue;
                 }));
 
         public static readonly DependencyProperty MainContentProperty =

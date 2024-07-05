@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Diagnostics;
 using System.Globalization;
@@ -10,7 +12,7 @@ public class HttpContentTypeConverter : IValueConverter
 {
 	public static HttpContentTypeConverter Default { get; } = new();
 
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	public object Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (targetType == typeof(string))
 		{
@@ -31,7 +33,7 @@ public class HttpContentTypeConverter : IValueConverter
 		}
 	}
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		Debug.Assert(targetType == typeof(HttpContentType));
 		if (value is string s)
@@ -49,7 +51,7 @@ public class HttpContentTypeConverter : IValueConverter
 
 public class ProgressStateConverter : IValueConverter
 {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	public object Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not bool b)
 		{
@@ -60,7 +62,7 @@ public class ProgressStateConverter : IValueConverter
 		return b ? TaskbarItemProgressState.Indeterminate : TaskbarItemProgressState.Normal;
 	}
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (value is not TaskbarItemProgressState s)
 		{
@@ -71,14 +73,14 @@ public class ProgressStateConverter : IValueConverter
 		return s switch
 		{
 			TaskbarItemProgressState.Indeterminate => true,
-			_ => (object)false,
+			_ => (object?)false,
 		};
 	}
 }
 
 public class RatioValueConverter : IValueConverter
 {
-	public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+	public object? Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		if (parameter is string str && double.TryParse(str, out double ratio))
 		{
@@ -92,7 +94,7 @@ public class RatioValueConverter : IValueConverter
 		return value;
 	}
 
-	public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+	public object ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
 	{
 		throw new NotImplementedException();
 	}

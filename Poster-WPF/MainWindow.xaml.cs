@@ -237,6 +237,11 @@ public partial class MainWindow : Window
 		{
 			using FileStream fileStream = new(saveFileDialog.FileName, FileMode.Create);
 			var s = _responseModel.ResponseStream;
+			if (s is null)
+			{
+				ShowHint("Nothing to save.");
+				return;
+			}
 			s.Position = 0;
 			await s.CopyToAsync(fileStream);
 		}
