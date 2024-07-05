@@ -1,3 +1,5 @@
+#nullable enable
+
 using Microsoft.Win32;
 using System;
 using System.CodeDom.Compiler;
@@ -31,13 +33,15 @@ namespace Poster;
 /// </summary>
 public partial class MainWindow : Window
 {
-	private ComboBox methodSelector, contentTypeSelector;
+#pragma warning disable IDE1006 // We use camel case for XAML components.
+	private ComboBox methodSelector = null!, contentTypeSelector = null!;
+#pragma warning restore
 	private readonly RequestModel _requestModel = new();
 	private readonly ResponseModel _responseModel = new();
-	private Progress<double> _progress;
+	private readonly Progress<double> _progress;
 	private bool _progressBarIndeterminate;
 
-	protected CancellationTokenSource _sendButtonCTS;
+	protected CancellationTokenSource? _sendButtonCTS;
 
 	public bool ProgressBarIndeterminate
 	{
@@ -61,7 +65,7 @@ public partial class MainWindow : Window
 			progressBar.Value = value;
 			if (value < 1)
 			{
-				ShowHint($"Receiving {value:0.00}%");
+				ShowHint($"Receiving {value * 100 :0.00}%");
 			}
 			else
 			{
@@ -75,8 +79,8 @@ public partial class MainWindow : Window
 	{
 		base.OnContentRendered(e);
 
-		methodSelector = this.FindUid(nameof(methodSelector)) as ComboBox;
-		contentTypeSelector = this.FindUid(nameof(contentTypeSelector)) as ComboBox;
+		methodSelector = (this.FindUid(nameof(methodSelector)) as ComboBox)!;
+		contentTypeSelector = (this.FindUid(nameof(contentTypeSelector)) as ComboBox)!;
 
 		methodSelector.ItemsSource = Constants.HttpMethods;
 		methodSelector.SelectedIndex = 0;
@@ -218,6 +222,24 @@ public partial class MainWindow : Window
 	private void OnFolderOpenClicked(object sender, RoutedEventArgs e)
 	{
 		Process.Start(_responseModel.TempFolder.FullName);
+	}
+
+	private async void OnImageSaveClicked(object sender, RoutedEventArgs e)
+	{
+		var ext = System.IO.Path.GetExtension(_responseModel.RealFileName);
+		SaveFileDialog saveFileDialog = new()
+		{
+			FileName = _responseModel.RealFileName,
+			Filter = $"*{ext}|{ext}|All files|*",
+			Title = "Save image",
+		};
+		if (saveFileDialog.ShowDialog(this) == true)
+		{
+			using FileStream fileStream = new(saveFileDialog.FileName, FileMode.Create);
+			var s = _responseModel.ResponseStream;
+			s.Position = 0;
+			await s.CopyToAsync(fileStream);
+		}
 	}
 
 	private void OnFileSaveClicked(object sender, RoutedEventArgs e)

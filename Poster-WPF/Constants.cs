@@ -43,5 +43,9 @@ namespace Poster
 				_ => true,
 			};
 		}
+
+		internal static readonly string[] InvalidExtensions = [
+			".com",
+		];
 	}
 }

@@ -141,10 +141,24 @@ public partial class MainWindow
 					bitmap.BeginInit();
 					bitmap.StreamSource = memoryCopy;
 					bitmap.BaseUri = null; // this MUST set to null HERE to avoid NullReferenceException in next line.
-					bitmap.EndInit();
+					try
+					{
+						bitmap.EndInit();
+					}
+					catch (NotSupportedException ex)
+					{
+						if (ex.InnerException is System.Runtime.InteropServices.COMException)
+						{
+							imageResponse.Source = null;
+							_responseModel.ResponseType = HttpContentType.File;
+							goto SaveFile;
+						}
+						ShowHint("Failed to load image.");
+					}
 					break;
 				case HttpContentType.File:
 				default:
+				SaveFile:
 					string? fileName = responseHeaders.ContentDisposition?.FileName;
 					fileName = fileName?.Trim('"', '\'', ' ');
 					if (string.IsNullOrWhiteSpace(fileName))
@@ -167,7 +181,7 @@ public partial class MainWindow
 					}
 					_responseModel.RealFileName = fileName;
 					string ext = Path.GetExtension(fileName);
-					if (string.IsNullOrEmpty(ext))
+					if (string.IsNullOrEmpty(ext) || Constants.InvalidExtensions.Contains(ext))
 					{
 						ext = ".tmp";
 					}

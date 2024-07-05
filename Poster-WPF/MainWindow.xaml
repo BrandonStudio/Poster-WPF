@@ -195,7 +195,19 @@
               </TextBox>
             </TabItem>
             <TabItem Header="_Image">
-              <Image x:Name="imageResponse"/>
+              <Grid >
+                <Button
+                  Margin="0" Padding="4"
+                  BorderThickness="0" Opacity=".8"
+                  VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                  Click="OnImageSaveClicked">
+                  <!--<Button.OpacityMask>
+                    <SolidColorBrush Color="Black" Opacity="0" />
+                  </Button.OpacityMask>-->
+                  Save
+                </Button>
+                <Image x:Name="imageResponse"/>
+              </Grid>
             </TabItem>
             <TabItem Header="_File">
               <DockPanel>
