@@ -145,15 +145,11 @@ public partial class MainWindow
 					{
 						bitmap.EndInit();
 					}
-					catch (NotSupportedException ex)
+					catch (NotSupportedException)
 					{
-						if (ex.InnerException is System.Runtime.InteropServices.COMException)
-						{
-							imageResponse.Source = null;
-							_responseModel.ResponseType = HttpContentType.File;
-							goto SaveFile;
-						}
-						ShowHint("Failed to load image.");
+						imageResponse.Source = null;
+						_responseModel.ResponseType = HttpContentType.File;
+						goto SaveFile;
 					}
 					break;
 				case HttpContentType.File:
