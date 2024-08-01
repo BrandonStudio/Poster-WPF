@@ -82,11 +82,20 @@ public partial class MainWindow
 			{
 				SetHeadersGrid();
 			}
-			foreach (var header in _requestModel.RequestHeaders)
+			try
 			{
-				var name = header.Name;
-				var value = header.Value;
-				message.Headers.Add(name, value);
+				foreach (var header in _requestModel.RequestHeaders)
+				{
+					var name = header.Name;
+					var value = header.Value;
+					message.Headers.Add(name, value);
+				}
+			}
+			catch (FormatException)
+			{
+				MarkError();
+				statusText.Text = statusBar.Text = "Invalid header format";
+				return;
 			}
 			using var result = await client.SendAsync(
 				message, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
