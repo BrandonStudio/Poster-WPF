@@ -1,0 +1,90 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Poster-WPF/Poster-WPF.csproj'
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    env:
+      Name: Poster-WPF
+      Solution_Name: Poster-WPF.sln
+      Project_Name: Poster-WPF\Poster-WPF.csproj
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        fetch-tags: true
+
+    - name: Get previous version
+      id: previous_version
+      run: |
+        $prev_version = git describe --tags $(git rev-list --tags --max-count=1)
+        Write-Output Previous Version: $prev_version
+        Write-Output "prev_version=$prev_version" >> $GITHUB_ENV
+
+    - name: Get version
+      id: version
+      run: |
+        Invoke-WebRequest https://github.com/BrandonStudio/GitHubActionScripts/raw/main/getMSBuildApplicationVersion.py -OutFile getMSBuildApplicationVersion.py
+        $version = python getMSBuildApplicationVersion.py ${{ env.Project_Name }}
+        Write-Output Current Version: $version
+        Write-Output "version=$version" >> $GITHUB_ENV
+
+    - name: Check version changed
+      if: ${{ steps.version.outputs.version }} == ${{ steps.previous_version.outputs.prev_version }}
+      run: |
+        Write-Output "Version unchanged, exit."
+        exit 78
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build
+      run: msbuild /p:Configuration=Release ${{ env.Project_Name }}
+
+    - name: Create release
+      id: create_release
+      uses: avakar/tag-and-release@v1
+      with:
+        tag_name: v${{ steps.version.outputs.version }}
+        release_name: Release v${{ steps.version.outputs.version }}
+        draft: true
+        prerelease: false
+
+    - name: Upload pdb
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: >
+        Invoke-WebRequest -Method Post ${{ steps.create_release.outputs.upload_url }}=${{ env.Name }}-v${{ steps.version.outputs.version }}.pdb
+        -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}" }
+        -InFile Poster-WPF\bin\Release\${{ env.Name }}.pdb
+
+    - name: Package and upload other assets
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        ARCHIVE_NAME: ${{ env.Name }}-v${{ steps.version.outputs.version }}-portable.zip
+        UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+      run: |
+        Set-Location Poster-WPF\bin\Release
+        Remove-Item ${{ env.Name }}.pdb
+        Remove-Item ${{ env.Name }}.application
+        Remove-Item app.publish -Recurse
+        Compress-Archive -Path * -DestinationPath ..\${{ env.ARCHIVE_NAME }}
+        Invoke-WebRequest -Method Post ${{ env.UPLOAD_URL }}=${{ env.ARCHIVE_NAME }} -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}" } -InFile ..\${{ env.ARCHIVE_NAME }}
+
+    - name: Get and upload clickonce setup.exe
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SETUP_NAME: ${{ env.Name }}-v${{ steps.version.outputs.version }}-clickonce.exe
+        UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+      run: |
+        Invoke-WebRequest https://static.brandonstudio.site/Apps/Releases/Poster-WPF/setup.exe -OutFile ${{ env.SETUP_NAME }}
+        Invoke-WebRequest -Method Post ${{ env.UPLOAD_URL }}=${{ env.SETUP_NAME }} -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}" } -InFile ${{ env.SETUP_NAME }}

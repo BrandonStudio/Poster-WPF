@@ -1,0 +1,32 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        configuration:
+          - Debug
+          - Release
+  
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: Poster-WPF.sln
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup MSBuild
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Build
+      run: msbuild /p:Configuration=${{ matrix.configuration }} ${{ env.Solution_Name }}
