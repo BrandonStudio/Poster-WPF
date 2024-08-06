@@ -66,11 +66,18 @@ jobs:
         draft: true
         prerelease: false
 
+    - name: Trim url
+      id: trim_url
+      run: |
+        $url = "${{ steps.create_release.outputs.upload_url }}"
+        $url = [regex]::Replace($url, "assets(?!.*assets).*", "assets?name")
+        Write-Output "upload_url=$url" >> $env:GITHUB_OUTPUT
+
     - name: Upload pdb
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: >
-        Invoke-WebRequest -Method Post ${{ steps.create_release.outputs.upload_url }}=${{ env.Name }}-${{ steps.version.outputs.version }}.pdb
+        Invoke-WebRequest -Method Post ${{ steps.trim_url.outputs.upload_url }}=${{ env.Name }}-${{ steps.version.outputs.version }}.pdb
         -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}" }
         -InFile Poster-WPF\bin\Release\${{ env.Name }}.pdb
 
@@ -78,7 +85,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         ARCHIVE_NAME: ${{ env.Name }}-${{ steps.version.outputs.version }}-portable.zip
-        UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+        UPLOAD_URL: ${{ steps.trim_url.outputs.upload_url }}
       run: |
         Set-Location Poster-WPF\bin\Release
         Remove-Item ${{ env.Name }}.pdb
@@ -91,7 +98,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SETUP_NAME: ${{ env.Name }}-${{ steps.version.outputs.version }}-clickonce.exe
-        UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
+        UPLOAD_URL: ${{ steps.trim_url.outputs.upload_url }}
       run: |
         Invoke-WebRequest https://static.brandonstudio.site/Apps/Releases/Poster-WPF/setup.exe -OutFile ${{ env.SETUP_NAME }}
         Invoke-WebRequest -Method Post ${{ env.UPLOAD_URL }}=${{ env.SETUP_NAME }} -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}" } -InFile ${{ env.SETUP_NAME }}
