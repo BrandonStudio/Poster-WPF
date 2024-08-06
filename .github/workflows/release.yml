@@ -1,6 +1,7 @@
-name: Build
+name: Release
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
@@ -8,7 +9,7 @@ on:
       - 'Poster-WPF/Poster-WPF.csproj'
 
 jobs:
-  build:
+  release:
     runs-on: windows-latest
 
     env:
@@ -28,21 +29,27 @@ jobs:
       run: |
         $prev_version = git describe --tags $(git rev-list --tags --max-count=1)
         Write-Output Previous Version: $prev_version
-        Write-Output "prev_version=$prev_version" >> $GITHUB_ENV
+        Write-Output "prev_version=$prev_version" >> $GITHUB_OUTPUT
 
     - name: Get version
       id: version
       run: |
         Invoke-WebRequest https://github.com/BrandonStudio/GitHubActionScripts/raw/main/getMSBuildApplicationVersion.py -OutFile getMSBuildApplicationVersion.py
         $version = python getMSBuildApplicationVersion.py ${{ env.Project_Name }}
+        $version = "v" + $version
         Write-Output Current Version: $version
-        Write-Output "version=$version" >> $GITHUB_ENV
+        Write-Output "version=$version" >> $GITHUB_OUTPUT
 
     - name: Check version changed
-      if: ${{ steps.version.outputs.version }} == ${{ steps.previous_version.outputs.prev_version }}
+      if: ${{ env.CURRENT_VERSION }} == ${{ env.PREVIOUS_VERSION }}
+      env:
+        CURRENT_VERSION: ${{ steps.version.outputs.version }}
+        PREVIOUS_VERSION: ${{ steps.previous_version.outputs.prev_version }}
       run: |
+        Write-Output "[DEBUG] Current version: ${{ env.CURRENT_VERSION }}"
+        Write-Output "[DEBUG] Previous version: ${{ env.PREVIOUS_VERSION }}"
         Write-Output "Version unchanged, exit."
-        exit 78
+        exit 1
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -54,8 +61,8 @@ jobs:
       id: create_release
       uses: avakar/tag-and-release@v1
       with:
-        tag_name: v${{ steps.version.outputs.version }}
-        release_name: Release v${{ steps.version.outputs.version }}
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: Release ${{ steps.version.outputs.version }}
         draft: true
         prerelease: false
 
@@ -63,14 +70,14 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: >
-        Invoke-WebRequest -Method Post ${{ steps.create_release.outputs.upload_url }}=${{ env.Name }}-v${{ steps.version.outputs.version }}.pdb
+        Invoke-WebRequest -Method Post ${{ steps.create_release.outputs.upload_url }}=${{ env.Name }}-${{ steps.version.outputs.version }}.pdb
         -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}" }
         -InFile Poster-WPF\bin\Release\${{ env.Name }}.pdb
 
     - name: Package and upload other assets
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        ARCHIVE_NAME: ${{ env.Name }}-v${{ steps.version.outputs.version }}-portable.zip
+        ARCHIVE_NAME: ${{ env.Name }}-${{ steps.version.outputs.version }}-portable.zip
         UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
       run: |
         Set-Location Poster-WPF\bin\Release
@@ -83,7 +90,7 @@ jobs:
     - name: Get and upload clickonce setup.exe
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SETUP_NAME: ${{ env.Name }}-v${{ steps.version.outputs.version }}-clickonce.exe
+        SETUP_NAME: ${{ env.Name }}-${{ steps.version.outputs.version }}-clickonce.exe
         UPLOAD_URL: ${{ steps.create_release.outputs.upload_url }}
       run: |
         Invoke-WebRequest https://static.brandonstudio.site/Apps/Releases/Poster-WPF/setup.exe -OutFile ${{ env.SETUP_NAME }}
