@@ -136,6 +136,8 @@ public partial class MainWindow
 			_responseModel.ResponseStream = memoryCopy;
 			await ReadStreamAsnyc(
 				responseStream, memoryCopy, totalBytes, _progress, cancellationToken);
+			if (totalBytes == 0)
+				return;
 			switch (_responseModel.ResponseType)
 			{
 				case HttpContentType.Text:
