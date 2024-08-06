@@ -29,7 +29,7 @@ jobs:
       run: |
         $prev_version = git describe --tags $(git rev-list --tags --max-count=1)
         Write-Output Previous Version: $prev_version
-        Write-Output "prev_version=$prev_version" >> $GITHUB_OUTPUT
+        Write-Output "prev_version=$prev_version" >> $env:GITHUB_OUTPUT
 
     - name: Get version
       id: version
@@ -38,7 +38,7 @@ jobs:
         $version = python getMSBuildApplicationVersion.py ${{ env.Project_Name }}
         $version = "v" + $version
         Write-Output Current Version: $version
-        Write-Output "version=$version" >> $GITHUB_OUTPUT
+        Write-Output "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Check version changed
       if: ${{ env.CURRENT_VERSION }} == ${{ env.PREVIOUS_VERSION }}
