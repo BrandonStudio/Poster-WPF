@@ -41,13 +41,8 @@ jobs:
         Write-Output "version=$version" >> $env:GITHUB_OUTPUT
 
     - name: Check version changed
-      if: ${{ env.CURRENT_VERSION }} == ${{ env.PREVIOUS_VERSION }}
-      env:
-        CURRENT_VERSION: ${{ steps.version.outputs.version }}
-        PREVIOUS_VERSION: ${{ steps.previous_version.outputs.prev_version }}
+      if: steps.version.outputs.version == steps.previous_version.outputs.prev_version
       run: |
-        Write-Output "[DEBUG] Current version: ${{ env.CURRENT_VERSION }}"
-        Write-Output "[DEBUG] Previous version: ${{ env.PREVIOUS_VERSION }}"
         Write-Output "Version unchanged, exit."
         exit 1
 
