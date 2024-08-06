@@ -42,9 +42,12 @@ jobs:
 
     - name: Check version changed
       if: steps.version.outputs.version == steps.previous_version.outputs.prev_version
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         Write-Output "Version unchanged, exit."
-        exit 1
+        gh run cancel ${{ github.run_id }}
+        gh run watch ${{ github.run_id }}
 
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
@@ -55,6 +58,8 @@ jobs:
     - name: Create release
       id: create_release
       uses: avakar/tag-and-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         tag_name: ${{ steps.version.outputs.version }}
         release_name: Release ${{ steps.version.outputs.version }}
