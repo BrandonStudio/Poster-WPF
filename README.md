@@ -7,7 +7,7 @@
 ### ClickOnce
 Open [this link](https://static.brandonstudio.site/Apps/Releases/Poster-WPF/Poster-WPF.application) in Microsoft Edge to install and run.
 
-Alternatively, open `microsoft-edge:https://static.brandonstudio.site/Apps/Releases/Poster-WPF/Poster-WPF.application`
+Alternatively, run [setup.exe](https://static.brandonstudio.site/Apps/Releases/Poster-WPF/Poster-WPF.exe)
 
 ### Portable
 [Download from release](https://github.com/BrandonStudio/Poster-WPF/releases/latest).

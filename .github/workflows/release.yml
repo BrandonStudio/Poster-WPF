@@ -95,14 +95,3 @@ jobs:
         Invoke-WebRequest -Method Post ${{ env.UPLOAD_URL }}=${{ env.ARCHIVE_NAME }} `
         -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}"; "Content-Type"="application/octet-stream" } `
         -InFile ..\${{ env.ARCHIVE_NAME }}
-
-    - name: Get and upload clickonce setup.exe
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SETUP_NAME: ${{ env.Name }}-${{ steps.version.outputs.version }}-clickonce.exe
-        UPLOAD_URL: ${{ steps.trim_url.outputs.upload_url }}
-      run: |
-        Invoke-WebRequest https://static.brandonstudio.site/Apps/Releases/Poster-WPF/setup.exe -OutFile ${{ env.SETUP_NAME }}
-        Invoke-WebRequest -Method Post ${{ env.UPLOAD_URL }}=${{ env.SETUP_NAME }} `
-        -Headers @{ "Authorization"="token ${{ env.GITHUB_TOKEN }}"; "Content-Type"="application/octet-stream" } `
-        -InFile ${{ env.SETUP_NAME }}
