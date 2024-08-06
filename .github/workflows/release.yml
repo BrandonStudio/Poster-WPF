@@ -60,11 +60,17 @@ jobs:
       uses: avakar/tag-and-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        CURRENT_VERSION: ${{ steps.version.outputs.version }}
+        PREVIOUS_VERSION: ${{ steps.previous_version.outputs.prev_version }}
       with:
-        tag_name: ${{ steps.version.outputs.version }}
-        release_name: Release ${{ steps.version.outputs.version }}
+        tag_name: ${{ env.CURRENT_VERSION }}
+        release_name: Release ${{ env.CURRENT_VERSION }}
         draft: true
         prerelease: false
+        body: |
+          # Changes
+
+          **Full Changelog**: https://github.com/BrandonStudio/Poster-WPF/compare/${{ env.PREVIOUS_VERSION }}...${{ env.CURRENT_VERSION }}
 
     - name: Trim url
       id: trim_url
