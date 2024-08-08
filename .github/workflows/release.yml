@@ -40,10 +40,19 @@ jobs:
         Write-Output Current Version: $version
         Write-Output "version=$version" >> $env:GITHUB_OUTPUT
 
+  debug:
+    runs-on: windows-latest
+    needs: pre-release
+    steps:
+    - name: See versions
+      run: |
+        Write-Output "Previous Version: ${{ needs.pre-release.outputs.prev_version }}"
+        Write-Output "Current Version: ${{ needs.pre-release.outputs.version }}"
+
   release:
     runs-on: windows-latest
     needs: pre-release
-    if: needs.pre-release.outputs.prev_version != needs.pre-release.outputs.version
+    if: ${{ needs.pre-release.outputs.prev_version != needs.pre-release.outputs.version }}
     env:
       CURRENT_VERSION: ${{ needs.pre-release.outputs.version }}
 
