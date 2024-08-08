@@ -12,10 +12,10 @@
     <local:ProgressStateConverter x:Key="progressStateConverter" />
     <local:RatioValueConverter x:Key="ratioValueConverter" />
   </Window.Resources>
-  <Window.TaskbarItemInfo>
+  <!--<Window.TaskbarItemInfo>
     <TaskbarItemInfo ProgressValue="{Binding Value, ElementName=progressBar}"
-                     ProgressState="{Binding IsIndeterminate, ElementName=progressBar, Converter={StaticResource progressStateConverter}}"/>
-  </Window.TaskbarItemInfo>
+                     ProgressState="{Binding ProgressState}"/>
+  </Window.TaskbarItemInfo>-->
   <DockPanel>
     <DockPanel DockPanel.Dock="Top" Margin="2">
       <Label DockPanel.Dock="Left" Margin="2" VerticalContentAlignment="Center">URL:</Label>

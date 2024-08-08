@@ -12,6 +12,7 @@ using System.Globalization;
 using System.Windows.Data;
 using System.Diagnostics;
 using System.Windows.Shell;
+using Microsoft.WindowsAPICodePack.Taskbar;
 
 namespace Poster;
 
@@ -61,6 +62,26 @@ static partial class Helpers
 				yield return new(parts[0], value.Trim());
 		}
 	}
+
+	public static TaskbarProgressBarState ToWinAPI(this TaskbarItemProgressState state) => state switch
+	{
+		TaskbarItemProgressState.Error => TaskbarProgressBarState.Error,
+		TaskbarItemProgressState.Indeterminate => TaskbarProgressBarState.Indeterminate,
+		TaskbarItemProgressState.None => TaskbarProgressBarState.NoProgress,
+		TaskbarItemProgressState.Normal => TaskbarProgressBarState.Normal,
+		TaskbarItemProgressState.Paused => TaskbarProgressBarState.Paused,
+		_ => (TaskbarProgressBarState)(int)state,
+	};
+
+	public static TaskbarItemProgressState ToWPF(this TaskbarProgressBarState state) => state switch
+	{
+		TaskbarProgressBarState.Error => TaskbarItemProgressState.Error,
+		TaskbarProgressBarState.Indeterminate => TaskbarItemProgressState.Indeterminate,
+		TaskbarProgressBarState.NoProgress => TaskbarItemProgressState.None,
+		TaskbarProgressBarState.Normal => TaskbarItemProgressState.Normal,
+		TaskbarProgressBarState.Paused => TaskbarItemProgressState.Paused,
+		_ => (TaskbarItemProgressState)(int)state,
+	};
 
 	private static readonly string[] s_textCTs =
 	[

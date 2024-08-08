@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Net.Http.Headers;
+using System.Windows.Shell;
 
 namespace Poster;
 
@@ -217,7 +218,7 @@ public partial class MainWindow
 		}
 		finally
 		{
-			ProgressBarIndeterminate = false;
+			ProgressState = TaskbarItemProgressState.None;
 			progressBar.Value = 0;
 		}
 	}

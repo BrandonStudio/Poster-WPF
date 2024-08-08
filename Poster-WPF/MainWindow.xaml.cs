@@ -1,6 +1,7 @@
 #nullable enable
 
 using Microsoft.Win32;
+using Microsoft.WindowsAPICodePack.Taskbar;
 using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
@@ -25,6 +26,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Shell;
 
 namespace Poster;
 
@@ -39,17 +41,36 @@ public partial class MainWindow : Window
 	private readonly RequestModel _requestModel = new();
 	private readonly ResponseModel _responseModel = new();
 	private readonly Progress<double> _progress;
-	private bool _progressBarIndeterminate;
+	private TaskbarItemProgressState _progressBarState;
 
 	protected CancellationTokenSource? _sendButtonCTS;
 
 	public bool ProgressBarIndeterminate
 	{
-		get => _progressBarIndeterminate;
+		get => _progressBarState == TaskbarItemProgressState.Indeterminate;
 		set
 		{
-			_progressBarIndeterminate = value;
 			progressBar.IsIndeterminate = value;
+			_progressBarState = value ? TaskbarItemProgressState.Indeterminate : TaskbarItemProgressState.Normal;
+			TaskbarManager.Instance?.SetProgressState(_progressBarState.ToWinAPI(), this);
+		}
+	}
+
+	public TaskbarItemProgressState ProgressState
+	{
+		get => _progressBarState;
+		set
+		{
+			_progressBarState = value;
+			if (value == TaskbarItemProgressState.Indeterminate)
+			{
+				progressBar.IsIndeterminate = true;
+			}
+			else
+			{
+				progressBar.IsIndeterminate = false;
+			}
+			TaskbarManager.Instance?.SetProgressState(value.ToWinAPI(), this);
 		}
 	}
 
@@ -63,6 +84,7 @@ public partial class MainWindow : Window
 		{
 			ProgressBarIndeterminate = false;
 			progressBar.Value = value;
+			TaskbarManager.Instance?.SetProgressValue((int)(value * 100), 100, this);
 			if (value < 1)
 			{
 				ShowHint($"Receiving {value * 100 :0.00}%");
@@ -70,7 +92,7 @@ public partial class MainWindow : Window
 			else
 			{
 				ShowHint("Done.");
-				progressBar.Value = 0;
+				ProgressState = TaskbarItemProgressState.None;
 			}
 		});
 	}
@@ -308,6 +330,7 @@ public partial class MainWindow : Window
 	private void MarkError()
 	{
 		statusText.Foreground = new SolidColorBrush(Colors.Red);
+		ProgressState = TaskbarItemProgressState.Error;
 		ShowHint("Error");
 	}
 
