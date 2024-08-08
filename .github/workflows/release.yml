@@ -40,14 +40,9 @@ jobs:
         Write-Output Current Version: $version
         Write-Output "version=$version" >> $env:GITHUB_OUTPUT
 
-  debug:
-    runs-on: windows-latest
-    needs: pre-release
-    steps:
-    - name: See versions
-      run: |
-        Write-Output "Previous Version: ${{ needs.pre-release.outputs.prev_version }}"
-        Write-Output "Current Version: ${{ needs.pre-release.outputs.version }}"
+    outputs:
+      prev_version: ${{ steps.previous_version.outputs.prev_version }}
+      version: ${{ steps.version.outputs.version }}
 
   release:
     runs-on: windows-latest
@@ -57,6 +52,8 @@ jobs:
       CURRENT_VERSION: ${{ needs.pre-release.outputs.version }}
 
     steps:
+    - uses: actions/checkout@v4
+
     - name: Setup MSBuild
       uses: microsoft/setup-msbuild@v2
 
