@@ -227,6 +227,12 @@
                     Click="OnFileSaveClicked">
                     S_ave To
                   </Button>
+                  <TextBlock Margin="2" Padding="2"
+                    VerticalAlignment="Bottom">
+                    <Hyperlink Click="OnOpenWithNotepadClicked">
+                      Open With Notepad
+                    </Hyperlink>
+                  </TextBlock>
                 </StackPanel>
                 <TextBox x:Name="fileResponsePath"
                   Margin="5" Padding="5"

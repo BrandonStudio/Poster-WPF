@@ -243,7 +243,12 @@ public partial class MainWindow : Window
 
 	private void OnFolderOpenClicked(object sender, RoutedEventArgs e)
 	{
-		Process.Start(_responseModel.TempFolder.FullName);
+		Process.Start("explorer.exe", $"/e, /select, \"{_responseModel.TempFilePath}\"");
+	}
+
+	private void OnOpenWithNotepadClicked(object sender, RoutedEventArgs e)
+	{
+		Process.Start("notepad.exe", '"' + _responseModel.TempFilePath + '"');
 	}
 
 	private async void OnImageSaveClicked(object sender, RoutedEventArgs e)
