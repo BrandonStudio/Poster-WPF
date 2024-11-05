@@ -14,6 +14,8 @@ using System.Windows.Media;
 using System.Net.Http.Headers;
 using System.Windows.Shell;
 
+using static Poster.Interops.FileZone;
+
 namespace Poster;
 
 public partial class MainWindow
@@ -201,12 +203,13 @@ public partial class MainWindow
 						memoryCopy.Position = 0;
 						await memoryCopy.CopyToAsync(fileStream, 81920, cancellationToken);
 					}
+					Helpers.MarkFile(tempFilePath, UrlZone.Internet);
 					_responseModel.TempFilePath = tempFilePath;
 					fileResponsePath.Text = tempFilePath;
 					break;
 			}
 		}
-		catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException)
+		catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or UriFormatException)
 		{
 			MarkError();
 			var msg = ex.Message;

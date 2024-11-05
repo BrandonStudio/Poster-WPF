@@ -95,6 +95,14 @@ public partial class MainWindow : Window
 				ProgressState = TaskbarItemProgressState.None;
 			}
 		});
+		var app = (App)Application.Current;
+		app.OnExceptionCaught += (parent, ex) => CatchExceptions(ex);
+	}
+
+	private void CatchExceptions(Exception ex)
+	{
+		MarkError();
+		statusText.Text = statusBar.Text = ex.Message;
 	}
 
 	protected override void OnContentRendered(EventArgs e)
@@ -271,6 +279,7 @@ public partial class MainWindow : Window
 			}
 			s.Position = 0;
 			await s.CopyToAsync(fileStream);
+			Helpers.MarkFile(saveFileDialog.FileName!);
 		}
 	}
 
@@ -285,7 +294,8 @@ public partial class MainWindow : Window
 		};
 		if (saveFileDialog.ShowDialog(this) == true)
 		{
-			File.Copy(_responseModel.TempFilePath, saveFileDialog.FileName, true);
+			File.Copy(_responseModel.TempFilePath, saveFileDialog.FileName!, true);
+			Helpers.MarkFile(saveFileDialog.FileName!);
 		}
 	}
 

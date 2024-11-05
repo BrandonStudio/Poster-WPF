@@ -33,8 +33,8 @@
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>41</ApplicationRevision>
-    <ApplicationVersion>1.3.3.%2a</ApplicationVersion>
+    <ApplicationRevision>42</ApplicationRevision>
+    <ApplicationVersion>1.3.4.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -94,6 +94,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Interops\FileZone.cs" />
     <Compile Include="RequestModel.cs" />
     <Compile Include="ResponseModel.cs" />
     <Page Include="HintLine.xaml">
@@ -114,7 +115,7 @@
     <Compile Include="HintLine.xaml.cs">
       <DependentUpon>HintLine.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Interops.cs" />
+    <Compile Include="Interops\Image.cs" />
     <Compile Include="MainWindow.xaml.core.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
