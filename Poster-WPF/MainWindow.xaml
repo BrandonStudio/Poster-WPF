@@ -200,6 +200,7 @@
                   Margin="0" Padding="4"
                   BorderThickness="0" Opacity=".8"
                   VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                  IsEnabled="{Binding StreamSaved}"
                   Click="OnImageSaveClicked">
                   <!--<Button.OpacityMask>
                     <SolidColorBrush Color="Black" Opacity="0" />
@@ -212,23 +213,29 @@
             <TabItem Header="_File">
               <DockPanel>
                 <StackPanel
+                  x:Name="fileCommandPanel"
+                  IsEnabled="{Binding StreamSaved}"
                   DockPanel.Dock="Top"
                   Orientation="Horizontal"
                   Margin="2">
                   <Button Margin="2" Padding="2"
+                    IsEnabled="{Binding FileAvailable}"
                     Click="OnFileOpenClicked">
                     _Open
                   </Button>
                   <Button Margin="2" Padding="2"
+                    IsEnabled="{Binding FileAvailable}"
                     Click="OnFolderOpenClicked">
                     Fol_der
                   </Button>
                   <Button Margin="2" Padding="2"
+                    IsEnabled="{Binding StreamSaved}"
                     Click="OnFileSaveClicked">
                     S_ave To
                   </Button>
                   <TextBlock Margin="2" Padding="2"
-                    VerticalAlignment="Bottom">
+                    VerticalAlignment="Bottom"
+                    IsEnabled="{Binding FileAvailable}">
                     <Hyperlink Click="OnOpenWithNotepadClicked">
                       Open With Notepad
                     </Hyperlink>

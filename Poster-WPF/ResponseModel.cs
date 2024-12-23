@@ -15,9 +15,16 @@ public class ResponseModel : INotifyPropertyChanged, IDisposable
 {
 	private HttpContentType _responseType = HttpContentType.Text;
 	private MemoryStream? _responseStream;
-	private bool _disposedValue;
+	private bool _streamSaved = false;
+	private bool _fileAvailable = false;
 
-	public event PropertyChangedEventHandler? PropertyChanged;
+	private event PropertyChangedEventHandler? _propertyChanged;
+
+	public event PropertyChangedEventHandler? PropertyChanged
+	{
+		add { _propertyChanged += value; }
+		remove { _propertyChanged -= value; }
+	}
 
 	public HttpContentType ResponseType
 	{
@@ -25,7 +32,27 @@ public class ResponseModel : INotifyPropertyChanged, IDisposable
 		set
 		{
 			_responseType = value;
-			PropertyChanged?.Invoke(this, new(nameof(ResponseType)));
+			_propertyChanged?.Invoke(this, new(nameof(ResponseType)));
+		}
+	}
+
+	public bool StreamSaved
+	{
+		get => _streamSaved;
+		set
+		{
+			_streamSaved = value;
+			_propertyChanged?.Invoke(this, new(nameof(StreamSaved)));
+		}
+	}
+
+	public bool FileAvailable
+	{
+		get => _fileAvailable;
+		set
+		{
+			_fileAvailable = value;
+			_propertyChanged?.Invoke(this, new(nameof(FileAvailable)));
 		}
 	}
 
@@ -45,6 +72,17 @@ public class ResponseModel : INotifyPropertyChanged, IDisposable
 	internal string? RealFileName { get; set; }
 	internal string? TempFilePath { get; set; }
 
+	public void Reset()
+	{
+		_responseStream?.Dispose();
+		_responseStream = null;
+		StreamSaved = false;
+		FileAvailable = false;
+		ResponseContentHeaders = null;
+		RealFileName = null;
+		TempFilePath = null;
+	}
+
 	static DirectoryInfo GetTempFolder()
 	{
 		string tempPath = Path.GetTempPath();
@@ -54,6 +92,8 @@ public class ResponseModel : INotifyPropertyChanged, IDisposable
 	}
 
 	#region Dispose
+	private bool _disposedValue;
+
 	protected virtual void Dispose(bool disposing)
 	{
 		if (!_disposedValue)

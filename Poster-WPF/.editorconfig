@@ -6,6 +6,9 @@ insert_final_newline = true
 indent_style = tab
 indent_size = 4
 
+# IDE0290: 使用主构造函数
+csharp_style_prefer_primary_constructors = false
+
 [*.xaml]
 indent_style = space
 indent_size = 2

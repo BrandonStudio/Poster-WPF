@@ -113,7 +113,7 @@ public partial class MainWindow
 			else if (code >= 200 && code < 300)
 			{
 				statusText.Foreground = new SolidColorBrush(Colors.Green);
-				statusBar.Text = "Success";
+				statusBar.Text = "Success. Receiveing...";
 			}
 			else if (code >= 300 && code < 400)
 			{
@@ -125,7 +125,6 @@ public partial class MainWindow
 				MarkError();
 			}
 
-			ProgressBarIndeterminate = false;
 			using var responseContent = result.Content;
 			using var responseStream = await responseContent.ReadAsStreamAsync();
 			var responseHeaders = responseContent.Headers;
@@ -135,20 +134,35 @@ public partial class MainWindow
 			_responseModel.ResponseType =
 				contentType is null ? HttpContentType.Text : contentType.ToContentType();
 			var totalBytes = responseContent.Headers.ContentLength.GetValueOrDefault(-1L);
+			if (totalBytes >= 0)
+			{
+				ProgressBarIndeterminate = false;
+			}
 			MemoryStream? memoryCopy = new();
 			_responseModel.ResponseStream = memoryCopy;
-			await ReadStreamAsnyc(
-				responseStream, memoryCopy, totalBytes, _progress, cancellationToken);
+			//await ReadStreamAsnyc(
+			//	responseStream, memoryCopy, totalBytes, _progress, cancellationToken);
+			async Task Read(WriteStreamFunc? func) => await ReadStreamAsnyc(responseStream, memoryCopy, func, totalBytes, _progress, cancellationToken);
 			if (totalBytes == 0)
 				return;
 			switch (_responseModel.ResponseType)
 			{
 				case HttpContentType.Text:
-					memoryCopy.Position = 0;
-					using (var reader = new StreamReader(memoryCopy))
-						textResponse.Text = reader.ReadToEnd();
+					//memoryCopy.Position = 0;
+					//using (var reader = new StreamReader(memoryCopy))
+					//	textResponse.Text = reader.ReadToEnd();
+					using (TextBoxAppender textBoxAppender = new(textResponse))
+					{
+						await Read((buffer, offset, count, cancellationToken) =>
+						{
+							textBoxAppender.AppendText(buffer, offset, count, cancellationToken);
+							return Task.CompletedTask;
+						});
+						await textBoxAppender.FlushAsync(cancellationToken);
+					}
 					break;
 				case HttpContentType.Image:
+					await Read(null);
 					memoryCopy.Position = 0;
 					var bitmap = new BitmapImage();
 					imageResponse.Source = bitmap;
@@ -198,15 +212,26 @@ public partial class MainWindow
 					string tempFilePath = Path.GetRandomFileName();
 					tempFilePath = Path.ChangeExtension(tempFilePath, ext);
 					tempFilePath = Path.Combine(_responseModel.TempFolder.FullName, tempFilePath);
+					_responseModel.TempFilePath = tempFilePath;
 					using (var fileStream = new FileStream(tempFilePath, FileMode.Create))
 					{
-						memoryCopy.Position = 0;
-						await memoryCopy.CopyToAsync(fileStream, 81920, cancellationToken);
+						//memoryCopy.Position = 0;
+						//await memoryCopy.CopyToAsync(fileStream, 81920, cancellationToken);
+						await Read(fileStream.WriteAsync);
 					}
 					Helpers.MarkFile(tempFilePath, UrlZone.Internet);
-					_responseModel.TempFilePath = tempFilePath;
 					fileResponsePath.Text = tempFilePath;
+					_responseModel.FileAvailable = true;
 					break;
+			}
+
+			_responseModel.StreamSaved = true;
+			if (ProgressBarIndeterminate)
+			{
+				if (statusBar.Text.EndsWith("..."))
+				{
+					statusBar.Text = "Done.";
+				}
 			}
 		}
 		catch (Exception ex) when (ex is HttpRequestException or InvalidOperationException or UriFormatException)
@@ -227,10 +252,10 @@ public partial class MainWindow
 	}
 
 	private async Task ReadStreamAsnyc(
-		Stream inputStream, Stream outputStream,
+		Stream inputStream, Stream memoryStream, WriteStreamFunc? callback,
 		long totalBytes, IProgress<double> progress, CancellationToken cancellationToken)
 	{
-		var canReportProgress = totalBytes != -1L;
+		var canReportProgress = totalBytes >= 0;
 		var bytesReceived = 0L;
 		const int bufferSize = 8192;
 		var buffer = new byte[bufferSize];
@@ -240,7 +265,9 @@ public partial class MainWindow
 		// It does not point out an offset in the stream data.
 		while ((bytesRead = await inputStream.ReadAsync(buffer, 0, bufferSize, cancellationToken)) != 0)
 		{
-			outputStream.Write(buffer, 0, bytesRead);
+			var mTask = memoryStream.WriteAsync(buffer, 0, bytesRead, cancellationToken);
+			var oTask = callback?.Invoke(buffer, 0, bytesRead) ?? Task.CompletedTask;
+			await Task.WhenAll(mTask, oTask);
 			bytesReceived += bytesRead;
 			if (canReportProgress)
 			{
