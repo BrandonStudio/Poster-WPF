@@ -31,6 +31,8 @@ public partial class MainWindow : Window
 	private TaskbarItemProgressState _progressBarState;
 
 	protected CancellationTokenSource? _sendButtonCTS;
+	private Task? _sendTask;
+	private byte _cancelCount = 0;
 
 	public bool ProgressBarIndeterminate
 	{
@@ -289,14 +291,37 @@ public partial class MainWindow : Window
 	private async Task StartSend()
 	{
 		_sendButtonCTS?.Cancel();
+		_sendButtonCTS?.Dispose();
+
+		string text = "Sending...";
+
+		if (_sendTask?.IsCompleted == false)
+		{
+			try
+			{
+				ShowHint("Cancelling...");
+				await _sendTask;
+			}
+			catch (OperationCanceledException)
+			{
+				text = $"Cancelled {_cancelCount++}. " + text;
+			}
+			finally
+			{
+				_sendTask.Dispose();
+			}
+		}
+
 		_sendButtonCTS = new();
 		_responseModel.Reset();
-		statusBar.Text = statusText.Text = "Sending...";
+		statusBar.Text = statusText.Text = text;
 		statusText.Foreground = new SolidColorBrush(Colors.Gray);
 		ClearResponse();
+
 		try
 		{
-			await SendAsync(_sendButtonCTS.Token);
+			_sendTask = SendAsync(_sendButtonCTS.Token);
+			await _sendTask;
 		}
 		catch (OperationCanceledException)
 		{
