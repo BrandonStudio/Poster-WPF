@@ -12,7 +12,7 @@ using System.Windows;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Brandon Studio")]
 [assembly: AssemblyProduct("Poster")]
-[assembly: AssemblyCopyright("Copyright © Brandon Studio. 2024")]
+[assembly: AssemblyCopyright("Copyright © Brandon Studio. 2024-2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -52,4 +52,5 @@ using System.Windows;
 //通过使用 "*"，如下所示:
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.4.*")]
+[assembly: Guid("4EEA06CB-DD1A-456C-8783-2E107894DDF8")]
 //[assembly: AssemblyFileVersion("1.1.*")]

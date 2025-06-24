@@ -71,13 +71,13 @@ public partial class MainWindow
 		client.DefaultRequestHeaders.UserAgent.Add(
 			new("Poster", Assembly.GetExecutingAssembly().GetName().Version.ToString()));
 		HttpContent? requestContent = null;
-		if (methodSelector.SelectedValue.ToString().HasMethodBody())
+		if (methodSelector.Text.HasMethodBody())
 		{
 			requestContent = GetContent();
 		}
 		try
 		{
-			var message = new HttpRequestMessage((HttpMethod)methodSelector.SelectedItem, urlText.Text)
+			var message = new HttpRequestMessage(new(methodSelector.Text), urlText.Text)
 			{
 				Content = requestContent,
 			};

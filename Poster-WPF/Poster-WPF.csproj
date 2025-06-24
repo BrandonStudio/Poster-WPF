@@ -27,14 +27,15 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>https://static.brandonstudio.site/Apps/Releases/Poster-WPF/</InstallUrl>
+    <ErrorReportUrl>https://github.com/BrandonStudio/Poster-WPF/issues</ErrorReportUrl>
     <ProductName>Poster-WPF</ProductName>
     <PublisherName>Brandon Studio</PublisherName>
     <SuiteName>Poster</SuiteName>
     <CreateWebPageOnPublish>true</CreateWebPageOnPublish>
     <WebPage>index.htm</WebPage>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>46</ApplicationRevision>
-    <ApplicationVersion>1.4.1.%2a</ApplicationVersion>
+    <ApplicationRevision>47</ApplicationRevision>
+    <ApplicationVersion>1.4.2.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
     <PublishWizardCompleted>true</PublishWizardCompleted>
