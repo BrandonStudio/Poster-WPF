@@ -343,7 +343,7 @@ public partial class MainWindow : Window
 			? textInput.Text
 			: null;
 		string? contentType = hasBody ? contentTypeSelector.Text : null;
-		string url = string.IsNullOrWhiteSpace(urlInput.Text) ? string.Empty : urlText.Text;
+		string url = urlText.Text == "URL" ? string.Empty : urlText.Text;
 
 		string curl = Interops.CurlInterop.Export(
 			methodSelector.Text,

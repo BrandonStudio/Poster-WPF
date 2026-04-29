@@ -94,15 +94,6 @@ public static class CurlInterop
 	}
 
 	/// <summary>
-	/// Standard HTTP methods that are natively supported by HTTP/2.
-	/// Custom methods outside this set require <c>--http1.1</c> in curl.
-	/// </summary>
-	private static readonly HashSet<string> s_standardMethods = new(StringComparer.OrdinalIgnoreCase)
-	{
-		"GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH", "TRACE",
-	};
-
-	/// <summary>
 	/// Generates a cURL command string from the given request parameters.
 	/// </summary>
 	/// <param name="method">HTTP method, e.g. <c>POST</c>.</param>
@@ -123,8 +114,11 @@ public static class CurlInterop
 		if (!string.Equals(method, "GET", StringComparison.OrdinalIgnoreCase))
 			sb.Append($" -X {method}");
 
-		// Custom (non-standard) methods are not supported by HTTP/2; force HTTP/1.1
-		if (!s_standardMethods.Contains(method))
+		// Custom (non-standard) methods are not supported by HTTP/2; force HTTP/1.1.
+		// A method is considered standard if it appears in the application's known method list.
+		bool isCustomMethod = !Constants.HttpMethods.Any(
+			m => string.Equals(m.Method, method, StringComparison.OrdinalIgnoreCase));
+		if (isCustomMethod)
 			sb.Append(" --http1.1");
 
 		sb.Append($" \"{EscapeDoubleQuoted(url)}\"");
@@ -179,6 +173,9 @@ public static class CurlInterop
 	private static string EscapeDoubleQuoted(string s)
 		=> s.Replace("\\", "\\\\").Replace("\"", "\\\"");
 
+	// Characters that can be backslash-escaped inside a double-quoted shell string.
+	private const string DoubleQuoteEscapable = "\"\\$`!";
+
 	/// <summary>
 	/// Splits a shell command into individual tokens, correctly handling
 	/// single-quoted strings, double-quoted strings (with backslash escapes),
@@ -208,7 +205,7 @@ public static class CurlInterop
 			if (inDouble)
 			{
 				// Inside double quotes: backslash only escapes ", \, $, `, !
-				if (c == '\\' && i + 1 < command.Length && "\"\\$`!".IndexOf(command[i + 1]) >= 0)
+				if (c == '\\' && i + 1 < command.Length && DoubleQuoteEscapable.IndexOf(command[i + 1]) >= 0)
 					escape = true;
 				else if (c == '"')
 					inDouble = false;
