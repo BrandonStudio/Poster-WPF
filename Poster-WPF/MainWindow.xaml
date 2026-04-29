@@ -50,7 +50,16 @@
         <ColumnDefinition Width="45*" />
         <ColumnDefinition Width="55*" />
       </Grid.ColumnDefinitions>
-      <GroupBox Header="Request" Grid.Column="0" Margin="2" Padding="2">
+      <GroupBox Grid.Column="0" Margin="2" Padding="2">
+        <GroupBox.Header>
+          <DockPanel>
+            <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,1"
+                    Click="OnExportCurlClicked">Export cURL</Button>
+            <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,1"
+                    Click="OnImportCurlClicked">Import cURL</Button>
+            <TextBlock VerticalAlignment="Center">Request</TextBlock>
+          </DockPanel>
+        </GroupBox.Header>
         <DockPanel x:Name="requestPanel" d:DataContext="{d:DesignInstance Type=local:RequestModel}">
           <local:HintLine x:Name="methodLine" DockPanel.Dock="Top" Hint="Method: ">
             <ComboBox

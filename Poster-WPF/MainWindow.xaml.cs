@@ -288,6 +288,74 @@ public partial class MainWindow : Window
 		}
 	}
 
+	private void OnImportCurlClicked(object sender, RoutedEventArgs e)
+	{
+		var dialog = new CurlImportDialog { Owner = this };
+		if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.CurlCommand))
+			return;
+
+		try
+		{
+			var result = Interops.CurlInterop.Parse(dialog.CurlCommand);
+
+			urlInput.Text = result.Url;
+			methodSelector.Text = result.Method;
+
+			// Split headers: Content-Type drives the selector; everything else goes to the grid
+			string? contentType = null;
+			var otherHeaders = new System.Collections.Generic.List<RequestModel.RequestHeader>();
+			foreach (var (name, value) in result.Headers)
+			{
+				if (string.Equals(name, "Content-Type", StringComparison.OrdinalIgnoreCase))
+					contentType = value;
+				else
+					otherHeaders.Add(new(name, value));
+			}
+
+			if (contentType != null)
+				contentTypeSelector.Text = contentType;
+
+			_requestModel.RequestHeaders = new(otherHeaders);
+			_requestModel.NotifyChange(nameof(RequestModel.RequestHeaders));
+
+			if (result.Body != null)
+			{
+				textInput.Text = result.Body;
+				_requestModel.RequestType = HttpContentType.Text;
+			}
+
+			ShowHint("cURL command imported.");
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show(this,
+				$"Failed to parse cURL command:\n{ex.Message}",
+				"Import Error",
+				MessageBoxButton.OK,
+				MessageBoxImage.Warning);
+		}
+	}
+
+	private void OnExportCurlClicked(object sender, RoutedEventArgs e)
+	{
+		bool hasBody = methodSelector.Text.HasMethodBody();
+		string? body = hasBody && _requestModel.RequestType == HttpContentType.Text
+			? textInput.Text
+			: null;
+		string? contentType = hasBody ? contentTypeSelector.Text : null;
+		string url = string.IsNullOrWhiteSpace(urlInput.Text) ? string.Empty : urlText.Text;
+
+		string curl = Interops.CurlInterop.Export(
+			methodSelector.Text,
+			url,
+			_requestModel.RequestHeaders,
+			body,
+			contentType);
+
+		Clipboard.SetText(curl);
+		ShowHint("cURL command copied to clipboard.");
+	}
+
 	private async Task StartSend()
 	{
 		_sendButtonCTS?.Cancel();
