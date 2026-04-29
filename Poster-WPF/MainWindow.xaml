@@ -57,6 +57,8 @@
                     Click="OnExportCurlClicked">Export cURL</Button>
             <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,1"
                     Click="OnImportCurlClicked">Import cURL</Button>
+            <Button DockPanel.Dock="Right" Margin="4,0,0,0" Padding="4,1"
+                    Click="OnImportCurlFromClipboardClicked">Import cURL from _Clipboard</Button>
             <TextBlock VerticalAlignment="Center">Request</TextBlock>
           </DockPanel>
         </GroupBox.Header>

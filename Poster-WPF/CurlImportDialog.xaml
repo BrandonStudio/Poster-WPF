@@ -21,7 +21,7 @@
         _OK
       </Button>
       <!-- filler -->
-      <UIElement />
+      <Border />
     </DockPanel>
     <TextBox x:Name="curlInput"
              AcceptsReturn="True"

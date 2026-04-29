@@ -34,7 +34,8 @@ public static class CurlInterop
 	/// Parses a cURL command string into a <see cref="CurlRequest"/>.
 	/// Supports <c>-X</c>, <c>-H</c>, <c>-d</c>/<c>--data*</c>, <c>-u</c> flags
 	/// and both space-separated and <c>--option=value</c> argument forms.
-	/// Line continuations (<c>\</c> at end of line) are handled automatically.
+	/// Line continuations (<c>\</c> at end of line on POSIX, <c>^</c> on Windows CMD)
+	/// are handled automatically.
 	/// </summary>
 	public static CurlRequest Parse(string? curlCommand)
 	{
@@ -43,20 +44,25 @@ public static class CurlInterop
 
 		var tokens = Tokenize(curlCommand);
 
-		// Find and skip the leading "curl" token (tolerates leading path like /usr/bin/curl)
-		int idx = 0;
-		while (idx < tokens.Count && !string.Equals(tokens[idx], "curl", StringComparison.OrdinalIgnoreCase)
-			&& !tokens[idx].EndsWith("/curl", StringComparison.OrdinalIgnoreCase))
-			idx++;
+		// Find and skip the leading "curl" token (tolerates paths like /usr/bin/curl or C:\curl.exe)
+		int idx;
+		for (idx = 0; idx < tokens.Count; idx++)
+		{
+			if (IsCurlToken(tokens[idx]))
+				break;
+		}
 		if (idx < tokens.Count)
-			idx++; // skip the "curl" token
+			idx++;  // skip the "curl" token itself
+		else
+			idx = 0;  // "curl" not found — treat all tokens as arguments
 
 		string? url = null, method = null, body = null;
 		var headers = new List<(string Name, string Value)>();
 
-		while (idx < tokens.Count)
+		for (; idx < tokens.Count;)
 		{
-			string token = tokens[idx++];
+			string token = tokens[idx];
+			idx++;
 
 			if (MatchFlag(token, tokens, ref idx, "-X", "--request", out string? v))
 			{
