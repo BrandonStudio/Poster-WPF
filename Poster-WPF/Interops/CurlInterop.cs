@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -35,8 +36,11 @@ public static class CurlInterop
 	/// and both space-separated and <c>--option=value</c> argument forms.
 	/// Line continuations (<c>\</c> at end of line) are handled automatically.
 	/// </summary>
-	public static CurlRequest Parse(string curlCommand)
+	public static CurlRequest Parse(string? curlCommand)
 	{
+		if (string.IsNullOrWhiteSpace(curlCommand))
+			return new CurlRequest(string.Empty, "GET", new List<(string, string)>(), null);
+
 		var tokens = Tokenize(curlCommand);
 
 		// Find and skip the leading "curl" token (tolerates leading path like /usr/bin/curl)
@@ -62,7 +66,7 @@ public static class CurlInterop
 			{
 				int colon = v.IndexOf(':');
 				if (colon > 0)
-					headers.Add((v[..colon].Trim(), v[(colon + 1)..].Trim()));
+					headers.Add((v.Substring(0, colon).Trim(), v.Substring(colon + 1).Trim()));
 			}
 			else if (MatchFlag(token, tokens, ref idx, "-d", "--data", out v)
 				|| MatchFlag(token, tokens, ref idx, "--data-raw", "--data-binary", out v)
@@ -134,7 +138,7 @@ public static class CurlInterop
 		{
 			// Prefer single-quoted data (no escaping needed inside single quotes in shells)
 			// unless the body itself contains a single quote.
-			if (!body.Contains('\''))
+			if (!body.Contains("'"))
 				sb.Append($" \\\n  --data '{body}'");
 			else
 				sb.Append($" \\\n  --data \"{EscapeDoubleQuoted(body)}\"");
@@ -163,15 +167,15 @@ public static class CurlInterop
 		}
 		if (token.StartsWith(longOpt + "="))
 		{
-			value = token[(longOpt.Length + 1)..];
+			value = token.Substring(longOpt.Length + 1);
 			return true;
 		}
 		value = null;
 		return false;
 	}
 
-	private static string EscapeDoubleQuoted(string s)
-		=> s.Replace("\\", "\\\\").Replace("\"", "\\\"");
+	private static string EscapeDoubleQuoted(string? s)
+		=> (s ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"");
 
 	// Characters that can be backslash-escaped inside a double-quoted shell string.
 	private const string DoubleQuoteEscapable = "\"\\$`!";
