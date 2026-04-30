@@ -80,7 +80,7 @@ public static class CurlInterop
 			{
 				// @ prefix means "read from file" — skip, cannot import
 				if (v != null && !v.StartsWith("@"))
-					body = v;
+					body = (body == null) ? v : body + "&" + v;
 			}
 			else if (MatchFlag(token, tokens, ref idx, "-u", "--user", out v) && v != null)
 			{
