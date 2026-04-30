@@ -95,10 +95,15 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Interops\CurlInterop.cs" />
     <Compile Include="Interops\FileZone.cs" />
     <Compile Include="RequestModel.cs" />
     <Compile Include="ResponseModel.cs" />
     <Compile Include="TextBoxAppender.cs" />
+    <Page Include="CurlImportDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="HintLine.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -107,6 +112,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
+    <Compile Include="CurlImportDialog.xaml.cs">
+      <DependentUpon>CurlImportDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
