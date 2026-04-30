@@ -162,6 +162,16 @@ public static class CurlInterop
 	// ---------------------------------------------------------------------------
 
 	/// <summary>
+	/// Returns <see langword="true"/> when <paramref name="token"/> is the <c>curl</c> executable
+	/// (bare name or as the last segment of a path, e.g. <c>/usr/bin/curl</c> or <c>C:\curl.exe</c>).
+	/// </summary>
+	private static bool IsCurlToken(string token)
+		=> string.Equals(token, "curl", StringComparison.OrdinalIgnoreCase)
+		|| token.EndsWith("/curl", StringComparison.OrdinalIgnoreCase)
+		|| token.EndsWith("\\curl", StringComparison.OrdinalIgnoreCase)
+		|| token.EndsWith("\\curl.exe", StringComparison.OrdinalIgnoreCase);
+
+	/// <summary>
 	/// Matches <paramref name="token"/> against a short option (<paramref name="shortOpt"/>) and a
 	/// long option (<paramref name="longOpt"/>), consuming the next token as the value when matched.
 	/// Also handles the <c>--long-opt=value</c> form.
