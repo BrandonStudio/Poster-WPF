@@ -138,7 +138,11 @@ public static class CurlInterop
 			sb.Append($" \\\n  -H \"Content-Type: {EscapeDoubleQuoted(contentType)}\"");
 
 		foreach (var header in headers)
+		{
+			if (string.Equals(header.Name, "Content-Type", StringComparison.OrdinalIgnoreCase))
+				continue;
 			sb.Append($" \\\n  -H \"{EscapeDoubleQuoted(header.Name)}: {EscapeDoubleQuoted(header.Value)}\"");
+		}
 
 		if (!string.IsNullOrEmpty(body))
 		{
@@ -181,7 +185,7 @@ public static class CurlInterop
 	}
 
 	private static string EscapeDoubleQuoted(string? s)
-		=> (s ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"");
+		=> (s ?? string.Empty).Replace("\\", "\\\\").Replace("\"", "\\\"").Replace("$", "\\$").Replace("`", "\\`").Replace("!", "\\!");
 
 	// Characters that can be backslash-escaped inside a double-quoted shell string.
 	private const string DoubleQuoteEscapable = "\"\\$`!";

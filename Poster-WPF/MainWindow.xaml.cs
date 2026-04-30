@@ -294,9 +294,26 @@ public partial class MainWindow : Window
 		if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.CurlCommand))
 			return;
 
+		ApplyCurlCommand(dialog.CurlCommand);
+	}
+
+	private void OnImportCurlFromClipboardClicked(object sender, RoutedEventArgs e)
+	{
+		string text = Clipboard.GetText();
+		if (string.IsNullOrWhiteSpace(text))
+		{
+			ShowHint("Clipboard is empty.");
+			return;
+		}
+
+		ApplyCurlCommand(text);
+	}
+
+	private void ApplyCurlCommand(string curlCommand)
+	{
 		try
 		{
-			var result = Interops.CurlInterop.Parse(dialog.CurlCommand);
+			var result = Interops.CurlInterop.Parse(curlCommand);
 
 			urlInput.Text = result.Url;
 			methodSelector.Text = result.Method;
@@ -315,7 +332,9 @@ public partial class MainWindow : Window
 			if (contentType != null)
 				contentTypeSelector.Text = contentType;
 
-			_requestModel.RequestHeaders = new(otherHeaders);
+			_requestModel.RequestHeaders.Clear();
+			foreach (var header in otherHeaders)
+				_requestModel.RequestHeaders.Add(header);
 			_requestModel.NotifyChange(nameof(RequestModel.RequestHeaders));
 
 			if (result.Body != null)
@@ -343,7 +362,9 @@ public partial class MainWindow : Window
 			? textInput.Text
 			: null;
 		string? contentType = hasBody ? contentTypeSelector.Text : null;
-		string url = urlText.Text == "URL" ? string.Empty : urlText.Text;
+		string url = urlInput.Text;
+		if (!string.IsNullOrWhiteSpace(url) && !url.StartsWith("http://") && !url.StartsWith("https://"))
+			url = "http://" + url;
 
 		string curl = Interops.CurlInterop.Export(
 			methodSelector.Text,
@@ -409,7 +430,9 @@ public partial class MainWindow : Window
 	private void SetHeadersGrid()
 	{
 		var headers = headersInput.Text.ToHeaders();
-		_requestModel.RequestHeaders = new(headers);
+		_requestModel.RequestHeaders.Clear();
+		foreach (var header in headers)
+			_requestModel.RequestHeaders.Add(header);
 		_requestModel.NotifyChange(nameof(RequestModel.RequestHeaders));
 	}
 
